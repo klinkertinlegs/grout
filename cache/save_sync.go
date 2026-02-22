@@ -36,7 +36,7 @@ func (cm *Manager) RecordSaveSync(record SaveSyncRecord) error {
 	return err
 }
 
-func (cm *Manager) GetSaveSyncHistory(deviceID string, limit int) []SaveSyncRecord {
+func (cm *Manager) GetSaveSyncHistory(deviceID string) []SaveSyncRecord {
 	if cm == nil || !cm.initialized {
 		return nil
 	}
@@ -49,8 +49,7 @@ func (cm *Manager) GetSaveSyncHistory(deviceID string, limit int) []SaveSyncReco
 		FROM save_sync_history
 		WHERE device_id = ?
 		ORDER BY synced_at DESC
-		LIMIT ?
-	`, deviceID, limit)
+	`, deviceID)
 	if err != nil {
 		gaba.GetLogger().Error("Failed to get save sync history", "error", err)
 		return nil
