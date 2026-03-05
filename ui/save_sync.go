@@ -14,13 +14,18 @@ import (
 )
 
 type SaveSyncInput struct {
-	Config       *internal.Config
-	Host         romm.Host
-	NewSlotName  string // If set, upload-only mode for a new slot
-	NewSlotRomID int    // ROM ID to upload saves for
+	Config        *internal.Config
+	Host          romm.Host
+	NewSlotName   string          // If set, upload-only mode for a new slot
+	NewSlotRomID  int             // ROM ID to upload saves for
+	ResolvedItems []sync.SyncItem // If set, skip resolve phase and execute directly
 }
 
-type SaveSyncOutput struct{}
+type SaveSyncOutput struct {
+	NeedsConflictResolution bool
+	Items                   []sync.SyncItem
+	ConflictIndices         map[int]int // maps conflict slice index → items slice index
+}
 
 type SaveSyncScreen struct{}
 
@@ -32,6 +37,11 @@ func (s *SaveSyncScreen) Execute(input SaveSyncInput) SaveSyncOutput {
 	config := input.Config
 	host := input.Host
 	client := romm.NewClientFromHost(host, config.ApiTimeout)
+
+	// If we have resolved items from the conflict screen, skip to execute phase
+	if input.ResolvedItems != nil {
+		return s.executeSyncPhase(client, config, host.DeviceID, input.ResolvedItems)
+	}
 
 	// Health check — verify server is reachable before starting sync
 	if _, err := client.GetHeartbeat(); err != nil {
@@ -74,29 +84,31 @@ func (s *SaveSyncScreen) Execute(input SaveSyncInput) SaveSyncOutput {
 	// Slot selection for first-time downloads with multiple slots
 	items = s.resolveMultiSlotDownloads(config, items)
 
-	// Check for conflicts and show resolution screen
-	var conflicts []sync.SyncItem
+	// Check for conflicts — if any, return to router for conflict screen
 	conflictIndices := map[int]int{} // maps conflict slice index → items slice index
+	hasConflicts := false
+	conflictCount := 0
 	for i, item := range items {
 		if item.Action == sync.ActionConflict {
-			conflictIndices[len(conflicts)] = i
-			conflicts = append(conflicts, item)
+			conflictIndices[conflictCount] = i
+			conflictCount++
+			hasConflicts = true
 		}
 	}
 
-	if len(conflicts) > 0 {
-		conflictScreen := NewSaveConflictScreen()
-		result, err := conflictScreen.Draw(SaveConflictInput{Items: conflicts})
-		if err == nil && result.Action == SaveConflictActionResolved {
-			for ci, resolved := range result.Items {
-				if idx, ok := conflictIndices[ci]; ok {
-					items[idx].Action = resolved.Action
-				}
-			}
+	if hasConflicts {
+		return SaveSyncOutput{
+			NeedsConflictResolution: true,
+			Items:                   items,
+			ConflictIndices:         conflictIndices,
 		}
 	}
 
-	// Phase 2: Execute — upload/download based on resolved actions
+	// No conflicts — execute directly
+	return s.executeSyncPhase(client, config, host.DeviceID, items)
+}
+
+func (s *SaveSyncScreen) executeSyncPhase(client *romm.Client, config *internal.Config, deviceID string, items []sync.SyncItem) SaveSyncOutput {
 	var report sync.SyncReport
 
 	hasActionable := false
@@ -117,7 +129,7 @@ func (s *SaveSyncScreen) Execute(input SaveSyncInput) SaveSyncOutput {
 				Progress:            progress,
 			},
 			func() (any, error) {
-				report = sync.ExecuteSaveSync(client, config, host.DeviceID, items, func(current, total int) {
+				report = sync.ExecuteSaveSync(client, config, deviceID, items, func(current, total int) {
 					if total > 0 {
 						progress.Store(float64(current) / float64(total))
 					}
@@ -126,11 +138,10 @@ func (s *SaveSyncScreen) Execute(input SaveSyncInput) SaveSyncOutput {
 			},
 		)
 	} else {
-		report = sync.ExecuteSaveSync(client, config, host.DeviceID, items, nil)
+		report = sync.ExecuteSaveSync(client, config, deviceID, items, nil)
 	}
 
 	s.showReport(report)
-
 	return SaveSyncOutput{}
 }
 

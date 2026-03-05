@@ -2,9 +2,7 @@ package ui
 
 import (
 	"errors"
-	"fmt"
 	"grout/sync"
-	"os"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 	"github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/i18n"
@@ -12,12 +10,16 @@ import (
 )
 
 type SaveConflictInput struct {
-	Items []sync.SyncItem
+	Items           []sync.SyncItem
+	AllItems        []sync.SyncItem // Full items list (passed through for transition)
+	ConflictIndices map[int]int     // Conflict index → AllItems index (passed through)
 }
 
 type SaveConflictOutput struct {
-	Action SaveConflictAction
-	Items  []sync.SyncItem
+	Action          SaveConflictAction
+	Items           []sync.SyncItem
+	AllItems        []sync.SyncItem // Passed through from input
+	ConflictIndices map[int]int     // Passed through from input
 }
 
 type SaveConflictScreen struct{}
@@ -28,8 +30,10 @@ func NewSaveConflictScreen() *SaveConflictScreen {
 
 func (s *SaveConflictScreen) Draw(input SaveConflictInput) (SaveConflictOutput, error) {
 	output := SaveConflictOutput{
-		Action: SaveConflictActionCancel,
-		Items:  input.Items,
+		Action:          SaveConflictActionCancel,
+		Items:           input.Items,
+		AllItems:        input.AllItems,
+		ConflictIndices: input.ConflictIndices,
 	}
 
 	items := s.buildMenuItems(input.Items)
@@ -69,17 +73,8 @@ func (s *SaveConflictScreen) buildMenuItems(conflicts []sync.SyncItem) []gaba.It
 	items := make([]gaba.ItemWithOptions, 0, len(conflicts))
 
 	for _, item := range conflicts {
-		label := item.LocalSave.RomName
-		if item.RemoteSave != nil {
-			label = fmt.Sprintf("%s (local: %s, remote: %s)",
-				item.LocalSave.RomName,
-				formatTimestamp(item.LocalSave.FilePath),
-				item.RemoteSave.UpdatedAt.Local().Format("Jan 2 3:04pm"),
-			)
-		}
-
 		items = append(items, gaba.ItemWithOptions{
-			Item: gaba.MenuItem{Text: label},
+			Item: gaba.MenuItem{Text: item.LocalSave.RomName},
 			Options: []gaba.Option{
 				{DisplayName: keepLocal, Value: "local"},
 				{DisplayName: keepRemote, Value: "remote"},
@@ -107,15 +102,4 @@ func (s *SaveConflictScreen) applyResolutions(conflicts []sync.SyncItem, resultI
 			}
 		}
 	}
-}
-
-func formatTimestamp(filePath string) string {
-	if filePath == "" {
-		return "unknown"
-	}
-	info, err := os.Stat(filePath)
-	if err != nil {
-		return "unknown"
-	}
-	return info.ModTime().Local().Format("Jan 2 3:04pm")
 }

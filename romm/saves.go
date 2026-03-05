@@ -152,6 +152,41 @@ func (c *Client) GetSaveSummary(romID int) (SaveSummary, error) {
 	return summary, err
 }
 
+// UpdateSave re-uploads a file to an existing save by ID (PUT /api/saves/{id}).
+// This updates the save's content and updatedAt in place without creating a new record.
+func (c *Client) UpdateSave(saveID int, savePath string) (Save, error) {
+	file, err := os.Open(savePath)
+	if err != nil {
+		return Save{}, err
+	}
+	defer file.Close()
+
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+
+	part, err := writer.CreateFormFile("saveFile", filepath.Base(savePath))
+	if err != nil {
+		return Save{}, err
+	}
+
+	if _, err := io.Copy(part, file); err != nil {
+		return Save{}, err
+	}
+
+	if err := writer.Close(); err != nil {
+		return Save{}, err
+	}
+
+	path := fmt.Sprintf(endpointSaveByID, saveID)
+	var res Save
+	err = c.doMultipartRequest("PUT", path, nil, &buf, writer.FormDataContentType(), &res)
+	if err != nil {
+		return Save{}, err
+	}
+
+	return res, nil
+}
+
 func (c *Client) UploadSave(romID int, savePath string, emulator string) (Save, error) {
 	return c.UploadSaveWithQuery(UploadSaveQuery{
 		RomID:    romID,

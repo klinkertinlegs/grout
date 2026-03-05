@@ -4,6 +4,8 @@ import (
 	"grout/cache"
 	"grout/cfw"
 	"grout/internal"
+	"grout/romm"
+	"grout/sync"
 	"grout/ui"
 	"os"
 
@@ -73,7 +75,9 @@ func buildTransitionFunc(state *AppState, quitOnBack bool, initialShowCollection
 		case ScreenGameFilters:
 			return transitionGameFilters(ctx, result)
 		case ScreenSaveSync:
-			return popOrExit(stack)
+			return transitionSaveSync(ctx, result)
+		case ScreenSaveConflict:
+			return transitionSaveConflict(ctx, result)
 		case ScreenSyncMenu:
 			return transitionSyncMenu(ctx, result)
 		case ScreenSyncedGames:
@@ -225,10 +229,53 @@ func transitionSaveSyncSettings(ctx *transitionContext, result any) (router.Scre
 	}
 
 	if needsSave {
-		ctx.state.Config.Hosts[0] = ctx.state.Host
+		if len(ctx.state.Config.Hosts) > 0 {
+			ctx.state.Config.Hosts[0] = ctx.state.Host
+		} else {
+			ctx.state.Config.Hosts = []romm.Host{ctx.state.Host}
+		}
 		internal.SaveConfig(ctx.state.Config)
 	}
 	return popOrExit(ctx.stack)
+}
+
+func transitionSaveSync(ctx *transitionContext, result any) (router.Screen, any) {
+	r := result.(ui.SaveSyncOutput)
+	if !r.NeedsConflictResolution {
+		return popOrExit(ctx.stack)
+	}
+
+	// Extract conflict items for the conflict screen
+	var conflicts []sync.SyncItem
+	for _, item := range r.Items {
+		if item.Action == sync.ActionConflict {
+			conflicts = append(conflicts, item)
+		}
+	}
+
+	return ScreenSaveConflict, ui.SaveConflictInput{
+		Items:           conflicts,
+		AllItems:        r.Items,
+		ConflictIndices: r.ConflictIndices,
+	}
+}
+
+func transitionSaveConflict(ctx *transitionContext, result any) (router.Screen, any) {
+	r := result.(ui.SaveConflictOutput)
+
+	if r.Action == ui.SaveConflictActionResolved {
+		for ci, resolved := range r.Items {
+			if idx, ok := r.ConflictIndices[ci]; ok && idx < len(r.AllItems) {
+				r.AllItems[idx] = resolved
+			}
+		}
+	}
+
+	return ScreenSaveSync, ui.SaveSyncInput{
+		Config:        ctx.state.Config,
+		Host:          ctx.state.Host,
+		ResolvedItems: r.AllItems,
+	}
 }
 
 func transitionGameList(ctx *transitionContext, result any) (router.Screen, any) {

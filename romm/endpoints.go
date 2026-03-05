@@ -25,6 +25,7 @@ const (
 	endpointFirmwareIdentifiers = "/api/firmware/identifiers"
 
 	endpointSaves          = "/api/saves"
+	endpointSaveByID       = "/api/saves/%d"
 	endpointSaveSummary    = "/api/saves/summary"
 	endpointSaveContent    = "/api/saves/%d/content"
 	endpointSaveDownloaded = "/api/saves/%d/downloaded"

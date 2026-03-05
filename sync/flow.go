@@ -56,7 +56,7 @@ func ExecuteSaveSync(client *romm.Client, config *internal.Config, deviceID stri
 	cm := cache.GetCacheManager()
 	if cm != nil {
 		for _, item := range report.Items {
-			if item.Action == ActionSkip || item.Action == ActionConflict {
+			if item.Action == ActionSkip || item.Action == ActionConflict || !item.Success {
 				continue
 			}
 			fileName := item.LocalSave.FileName

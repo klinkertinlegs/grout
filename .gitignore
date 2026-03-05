@@ -39,3 +39,4 @@ __pycache__/
 site/
 
 /save_slots.json
+/create-conflict
