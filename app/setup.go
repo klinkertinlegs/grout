@@ -56,6 +56,11 @@ func setup() SetupResult {
 		}
 	}
 
+	// Pre-load config to apply settings that must be set before Init()
+	if preConfig, err := internal.LoadConfig(); err == nil {
+		gaba.SetFlipFaceButtons(preConfig.SwapFaceButtons)
+	}
+
 	gaba.Init(gaba.Options{
 		WindowTitle:          "Grout",
 		PrimaryThemeColorHex: 0x007C77,
@@ -145,6 +150,7 @@ func setup() SetupResult {
 	}
 
 	internal.InitKidMode(config)
+	gaba.SetFlipFaceButtons(config.SwapFaceButtons)
 
 	if internal.IsKidModeEnabled() {
 		splashBytes, _ := resources.GetSplashImageBytes()

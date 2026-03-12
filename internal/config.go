@@ -38,6 +38,7 @@ type Config struct {
 	DownloadArtScreenshotPreview bool                        `json:"download_art_screenshot_preview,omitempty"`
 	DownloadSplashArt            artutil.ArtKind             `json:"download_splash_art,omitempty"`
 
+	SwapFaceButtons       bool              `json:"swap_face_buttons,omitempty"`
 	PlatformOrder         []string          `json:"platform_order,omitempty"`
 	SaveDirectoryMappings map[string]string `json:"save_directory_mappings,omitempty"`
 	SlotPreferences       map[string]string `json:"-"`                           // Stored in save_slots.json, not config.json

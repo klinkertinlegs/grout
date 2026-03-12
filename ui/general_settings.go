@@ -153,6 +153,14 @@ func (s *GeneralSettingsScreen) buildMenuItems(config *internal.Config) []gaba.I
 			},
 			SelectedOption: languageToIndex(config.Language),
 		},
+		{
+			Item: gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_swap_face_buttons", Other: "Swap Face Buttons"}, nil)},
+			Options: []gaba.Option{
+				{DisplayName: i18n.Localize(&goi18n.Message{ID: "common_false", Other: "False"}, nil), Value: false},
+				{DisplayName: i18n.Localize(&goi18n.Message{ID: "common_true", Other: "True"}, nil), Value: true},
+			},
+			SelectedOption: boolToIndex(config.SwapFaceButtons),
+		},
 	}
 }
 
@@ -196,6 +204,12 @@ func (s *GeneralSettingsScreen) applySettings(config *internal.Config, items []g
 		case i18n.Localize(&goi18n.Message{ID: "settings_language", Other: "Language"}, nil):
 			if val, ok := item.Options[item.SelectedOption].Value.(string); ok {
 				config.Language = val
+			}
+
+		case i18n.Localize(&goi18n.Message{ID: "settings_swap_face_buttons", Other: "Swap Face Buttons"}, nil):
+			if val, ok := item.Options[item.SelectedOption].Value.(bool); ok {
+				config.SwapFaceButtons = val
+				gaba.SetFlipFaceButtons(val)
 			}
 		}
 	}
