@@ -118,7 +118,7 @@ jobs:
 
       - name: Create Batocera distribution
         run: |
-          cd build/Batocera
+          cd build64/Batocera
           zip -r ../Grout-Batocera.zip Grout.sh Grout
 
       - name: Create GitHub Release
