@@ -1,6 +1,6 @@
 {
   "name": "Grout",
-  "version": "v4.6.1.8",
+  "version": "v4.7.0.0",
   "type": "TOOL",
   "description": "A RomM client for NextUI, muOS, Knulli, and Spruce v4.",
   "author": "The RomM Team",
@@ -36,7 +36,7 @@
     "v4.6.1.6": "Bug fix for BIOS download folder discrepancy when info metadata not present",
     "v4.6.1.7": "Added in the ability to filter the games list with more than just search.",
     "v4.6.1.8": "Hotfix for Spruce launch script. Sorry about that!",
-    "v4.7.0.0": "Save Sync rebuilt from the ground up: device-aware syncing, conflict resolution, user-configurable save slots, backup retention, sync history, and more!"
+    "v4.7.0.0": "Support for new features in RomM v4.7.0. See the changelog for more info."
   },
   "screenshots": [],
   "platforms": [
