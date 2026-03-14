@@ -75,6 +75,8 @@ type Rom struct {
 	UpdatedAt             time.Time      `json:"updated_at,omitempty"`
 	MissingFromFs         bool           `json:"missing_from_fs,omitempty"`
 	Siblings              []any          `json:"siblings,omitempty"`
+	PathVideo             string         `json:"path_video,omitempty"`
+	RAHash                string         `json:"ra_hash,omitempty"`
 	ScreenScraperMetadata ScreenScrapper `json:"ss_metadata,omitempty"`
 }
 
@@ -112,6 +114,7 @@ type RomFile struct {
 	CrcHash       string    `json:"crc_hash,omitempty"`
 	Md5Hash       string    `json:"md5_hash,omitempty"`
 	Sha1Hash      string    `json:"sha1_hash,omitempty"`
+	RAHash        string    `json:"ra_hash,omitempty"`
 	Category      any       `json:"category,omitempty"`
 }
 
