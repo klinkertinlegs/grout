@@ -98,7 +98,7 @@ func (s *DownloadScreen) draw(input DownloadInput) (DownloadOutput, error) {
 	downloads, artDownloads, gamelistEntries := s.buildDownloads(input.Config, input.Host, input.Platform, input.SelectedGames, input.SelectedFileID)
 
 	headers := make(map[string]string)
-	headers["Authorization"] = input.Host.BasicAuthHeader()
+	headers["Authorization"] = input.Host.AuthHeader()
 
 	slices.SortFunc(downloads, func(a, b gaba.Download) int {
 		return strings.Compare(strings.ToLower(a.DisplayName), strings.ToLower(b.DisplayName))

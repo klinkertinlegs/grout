@@ -54,9 +54,9 @@ func (s *Stats) recordError() {
 }
 
 var (
-	cacheManager     *Manager
-	cacheManagerOnce sync.Once
-	cacheManagerErr  error
+	cacheManager    *Manager
+	cacheManagerMu  sync.Mutex
+	cacheManagerErr error
 )
 
 func GetCacheManager() *Manager {
@@ -64,9 +64,20 @@ func GetCacheManager() *Manager {
 }
 
 func InitCacheManager(host romm.Host, config Config) error {
-	cacheManagerOnce.Do(func() {
-		cacheManager, cacheManagerErr = newCacheManager(host, config)
-	})
+	cacheManagerMu.Lock()
+	defer cacheManagerMu.Unlock()
+
+	if cacheManager != nil {
+		// Already initialized — just update the host
+		cacheManager.mu.Lock()
+		cacheManager.host = host
+		cacheManager.config = config
+		cacheManager.mu.Unlock()
+		cacheManagerErr = nil
+		return nil
+	}
+
+	cacheManager, cacheManagerErr = newCacheManager(host, config)
 	return cacheManagerErr
 }
 
@@ -458,19 +469,17 @@ func GetCacheDir() string {
 }
 
 // DeleteCacheFolder removes the entire cache directory and resets the singleton
-// so InitCacheManager can be called again. This must only be called from the
-// main UI goroutine while no background sync is running; concurrent access to
-// cacheManagerOnce is not safe.
+// so InitCacheManager can create a fresh instance.
 func DeleteCacheFolder() error {
 	logger := gaba.GetLogger()
 
+	cacheManagerMu.Lock()
 	if cacheManager != nil {
 		cacheManager.Close()
 		cacheManager = nil
 	}
-
-	cacheManagerOnce = sync.Once{}
 	cacheManagerErr = nil
+	cacheManagerMu.Unlock()
 
 	cacheDir := GetCacheDir()
 	if err := os.RemoveAll(cacheDir); err != nil {

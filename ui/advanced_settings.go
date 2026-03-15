@@ -88,6 +88,7 @@ func (s *AdvancedSettingsScreen) Draw(input AdvancedSettingsInput) (AdvancedSett
 			output.Action = AdvancedSettingsActionServerAddress
 			return output, nil
 		}
+
 	}
 
 	s.applySettings(config, result.Items)
@@ -103,7 +104,7 @@ func (s *AdvancedSettingsScreen) Draw(input AdvancedSettingsInput) (AdvancedSett
 }
 
 func (s *AdvancedSettingsScreen) buildMenuItems(config *internal.Config) []gaba.ItemWithOptions {
-	return []gaba.ItemWithOptions{
+	items := []gaba.ItemWithOptions{
 		{
 			Item:    gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_sync_artwork", Other: "Preload Artwork"}, nil)},
 			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
@@ -165,6 +166,8 @@ func (s *AdvancedSettingsScreen) buildMenuItems(config *internal.Config) []gaba.
 			SelectedOption: logLevelToIndex(config.LogLevel),
 		},
 	}
+
+	return items
 }
 
 func (s *AdvancedSettingsScreen) applySettings(config *internal.Config, items []gaba.ItemWithOptions) {

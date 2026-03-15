@@ -218,7 +218,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (BIOSDownloadOutput, 
 	}
 
 	headers := make(map[string]string)
-	headers["Authorization"] = input.Host.BasicAuthHeader()
+	headers["Authorization"] = input.Host.AuthHeader()
 
 	res, err := gaba.DownloadManager(downloads, headers, gaba.DownloadManagerOptions{
 		AutoContinueOnComplete: true,

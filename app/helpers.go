@@ -135,7 +135,7 @@ func handleLogout(state *AppState) {
 	}
 
 	if err := cache.InitCacheManager(state.Config.Hosts[0], state.Config); err != nil {
-		logger.Error("Failed to initialize cache manager after re-login", "error", err)
+		logger.Error("Failed to re-initialize cache manager", "error", err)
 	}
 
 	platforms, err := internal.GetMappedPlatforms(state.Config.Hosts[0], state.Config.DirectoryMappings, state.Config.ApiTimeout)

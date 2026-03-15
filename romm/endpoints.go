@@ -32,4 +32,7 @@ const (
 
 	endpointDevices    = "/api/devices"
 	endpointDeviceByID = "/api/devices/%s"
+
+	endpointTokenExchange = "/api/client-tokens/exchange"
+	endpointCurrentUser   = "/api/users/me"
 )
