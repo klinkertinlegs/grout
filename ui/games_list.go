@@ -329,8 +329,6 @@ type loadGamesResult struct {
 }
 
 func (s *GameListScreen) loadGames(input GameListInput) (loadGamesResult, error) {
-	config := input.Config
-	host := input.Host
 	platform := input.Platform
 	collection := input.Collection
 
@@ -364,11 +362,9 @@ func (s *GameListScreen) loadGames(input GameListInput) (loadGamesResult, error)
 			logger.Debug("Loaded games from cache (no loading screen)", "type", ft, "id", id, "count", len(cached))
 			result.games = cached
 
-			// Check BIOS availability from cached data
+			// Check BIOS availability from platform firmware_count
 			if platform.ID != 0 && !isCollectionSet(collection) {
-				if hasBIOS, wasFetched := cm.HasBIOS(platform.ID); wasFetched {
-					result.hasBIOS = hasBIOS
-				}
+				result.hasBIOS = platform.FirmwareCount > 0
 			}
 
 			return result, nil
@@ -389,8 +385,6 @@ func (s *GameListScreen) loadGames(input GameListInput) (loadGamesResult, error)
 				Progress:            progress,
 			},
 			func() (interface{}, error) {
-				rc := romm.NewClientFromHost(host, config.ApiTimeout)
-
 				// Fetch games with progress and BIOS info in parallel
 				var wg sync.WaitGroup
 				var gamesFetchErr error
@@ -411,22 +405,8 @@ func (s *GameListScreen) loadGames(input GameListInput) (loadGamesResult, error)
 					}
 				}()
 
-				// Check BIOS availability
-				if hasBIOS, wasFetched := cm.HasBIOS(platform.ID); wasFetched {
-					result.hasBIOS = hasBIOS
-				} else {
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-						firmware, err := rc.GetFirmware(platform.ID)
-						if err == nil && len(firmware) > 0 {
-							result.hasBIOS = true
-							cm.SetBIOSAvailability(platform.ID, true)
-						} else {
-							cm.SetBIOSAvailability(platform.ID, false)
-						}
-					}()
-				}
+				// Check BIOS availability from platform firmware_count
+				result.hasBIOS = platform.FirmwareCount > 0
 
 				wg.Wait()
 
@@ -450,8 +430,6 @@ func (s *GameListScreen) loadGames(input GameListInput) (loadGamesResult, error)
 		i18n.Localize(&goi18n.Message{ID: "games_list_loading", Other: "Loading {{.Name}}..."}, map[string]interface{}{"Name": displayName}),
 		gaba.ProcessMessageOptions{ShowThemeBackground: true},
 		func() (interface{}, error) {
-			rc := romm.NewClientFromHost(host, config.ApiTimeout)
-
 			// Fetch games and BIOS info in parallel
 			var wg sync.WaitGroup
 			var gamesFetchErr error
@@ -468,38 +446,9 @@ func (s *GameListScreen) loadGames(input GameListInput) (loadGamesResult, error)
 				result.games = roms
 			}()
 
-			// Check BIOS availability (only for platforms, not collections)
+			// Check BIOS availability from platform firmware_count
 			if platform.ID != 0 && !isCollectionSet(collection) {
-				// First check cached BIOS info
-				if cm := cache.GetCacheManager(); cm != nil {
-					if hasBIOS, wasFetched := cm.HasBIOS(platform.ID); wasFetched {
-						result.hasBIOS = hasBIOS
-					} else {
-						// Fall back to network fetch if not cached
-						wg.Add(1)
-						go func() {
-							defer wg.Done()
-							firmware, err := rc.GetFirmware(platform.ID)
-							if err == nil && len(firmware) > 0 {
-								result.hasBIOS = true
-								// Cache the BIOS availability
-								cm.SetBIOSAvailability(platform.ID, true)
-							} else {
-								cm.SetBIOSAvailability(platform.ID, false)
-							}
-						}()
-					}
-				} else {
-					// No cache manager, do network fetch
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-						firmware, err := rc.GetFirmware(platform.ID)
-						if err == nil && len(firmware) > 0 {
-							result.hasBIOS = true
-						}
-					}()
-				}
+				result.hasBIOS = platform.FirmwareCount > 0
 			}
 
 			wg.Wait()

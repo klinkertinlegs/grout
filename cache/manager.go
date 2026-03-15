@@ -217,7 +217,7 @@ func (cm *Manager) ClearMetadata() error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
-	tables := []string{"games", "game_collections", "collections", "platforms", "bios_availability", "cache_metadata"}
+	tables := []string{"games", "game_collections", "collections", "platforms", "cache_metadata"}
 	tables = append(tables, junctionTables...)
 	tables = append(tables, lookupTables...)
 
