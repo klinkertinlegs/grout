@@ -6,6 +6,7 @@ import (
 	"grout/cfw/knulli"
 	"grout/cfw/muos"
 	"grout/cfw/nextui"
+	"grout/cfw/onion"
 	"grout/cfw/rocknix"
 	"grout/cfw/spruce"
 	"grout/cfw/trimui"
@@ -27,6 +28,8 @@ func EmulatorFolderMap(c CFW) map[string][]string {
 		return rocknix.Platforms // ROCKNIX stores saves alongside ROMs
 	case Allium:
 		return allium.SaveDirectories
+	case Onion:
+		return onion.SaveDirectories
 	case Trimui:
 		return trimui.SaveDirectories
 	case Batocera:

@@ -6,6 +6,7 @@ import (
 	"grout/cfw/knulli"
 	"grout/cfw/muos"
 	"grout/cfw/nextui"
+	"grout/cfw/onion"
 	"grout/cfw/rocknix"
 	"grout/cfw/spruce"
 	"grout/cfw/trimui"
@@ -29,6 +30,8 @@ func GetRomDirectory() string {
 		return trimui.GetRomDirectory()
 	case Allium:
 		return allium.GetRomDirectory()
+	case Onion:
+		return onion.GetRomDirectory()
 	case Batocera:
 		return batocera.GetRomDirectory()
 	}
@@ -61,6 +64,8 @@ func GetBIOSDirectory() string {
 		return trimui.GetBIOSDirectory()
 	case Allium:
 		return allium.GetBIOSDirectory()
+	case Onion:
+		return onion.GetBIOSDirectory()
 	case Batocera:
 		return batocera.GetBIOSDirectory()
 	}
@@ -103,6 +108,8 @@ func GetArtDirectory(romDir string, platformFSSlug, platformName string) string 
 		return trimui.GetArtDirectory(platformFSSlug, platformName)
 	case Allium:
 		return allium.GetArtDirectory(romDir)
+	case Onion:
+		return onion.GetArtDirectory(romDir)
 	case Batocera:
 		return batocera.GetArtDirectory(romDir)
 	default:
@@ -145,6 +152,8 @@ func BaseSavePath() string {
 		return trimui.GetBaseSavePath()
 	case Allium:
 		return allium.GetBaseSavePath()
+	case Onion:
+		return onion.GetBaseSavePath()
 	case Batocera:
 		return batocera.GetBaseSavePath()
 	}

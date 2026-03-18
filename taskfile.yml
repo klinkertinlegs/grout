@@ -78,7 +78,7 @@ tasks:
 
   package:
     desc: Package for all platforms
-    deps: [ package-next, package-muos, package-knulli, package-spruce, package-rocknix, package-trimui, package-allium, package-batocera ]
+    deps: [ package-next, package-muos, package-knulli, package-spruce, package-rocknix, package-trimui, package-allium, package-onion, package-batocera ]
     silent: true
 
   package-next:
@@ -132,6 +132,16 @@ tasks:
       - cp -R scripts/Allium/* build64/Allium/Grout.pak
       - cp build32/grout README.md LICENSE build64/Allium/Grout.pak/grout
 #      - cp -R build64/lib/* build64/Allium/Grout.pak/grout/lib/ # Come back for these libs
+    silent: true
+
+  package-onion:
+    desc: Package for Onion
+    cmds:
+      - rm -rf build64/Onion
+      - mkdir -p build64/Onion/Grout/grout/lib
+      - cp -R scripts/Onion/* build64/Onion/Grout
+      - cp build32/grout README.md LICENSE build64/Onion/Grout/grout
+#      - cp -R build64/lib/* build64/Onion/Grout/grout/lib/ # TODO: bundle Miyoo SDL2 libs
     silent: true
 
   package-rocknix:
@@ -209,6 +219,7 @@ tasks:
       - task: build-32
       - task: extract-32
       - task: package-allium
+      - task: package-onion
     silent: true
 
   all-local:
