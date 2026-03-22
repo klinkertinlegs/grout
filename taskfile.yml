@@ -84,97 +84,97 @@ tasks:
   package-next:
     desc: Package for NextUI
     cmds:
-      - rm -rf build64/Grout.pak
-      - mkdir -p build64/Grout.pak/lib
-      - cp build64/grout scripts/NextUI/launch.sh README.md LICENSE pak.json build64/Grout.pak
-      - cp -R build64/lib/* build64/Grout.pak/lib/
-      - chmod +x build64/Grout.pak/grout build64/Grout.pak/launch.sh
+      - rm -rf dist/Grout.pak
+      - mkdir -p dist/Grout.pak/lib
+      - cp build64/grout scripts/NextUI/launch.sh README.md LICENSE pak.json dist/Grout.pak
+      - cp -R build64/lib/* dist/Grout.pak/lib/
+      - chmod +x dist/Grout.pak/grout dist/Grout.pak/launch.sh
     silent: true
 
   package-muos:
     desc: Package for muOS
     cmds:
-      - rm -rf build64/muOS build64/Grout.muxapp
-      - mkdir -p build64/muOS/Grout/lib
-      - cp build64/grout scripts/muOS/mux_launch.sh README.md LICENSE build64/muOS/Grout
-      - cp -R build64/lib/* build64/muOS/Grout/lib/
-      - cp -R scripts/muOS/resources build64/muOS/Grout/
-      - chmod +x build64/muOS/Grout/grout build64/muOS/Grout/mux_launch.sh
-      - cd build64/muOS && zip -r ../Grout.muxapp Grout
+      - rm -rf dist/muOS dist/Grout.muxapp
+      - mkdir -p dist/muOS/Grout/lib
+      - cp build64/grout scripts/muOS/mux_launch.sh README.md LICENSE dist/muOS/Grout
+      - cp -R build64/lib/* dist/muOS/Grout/lib/
+      - cp -R scripts/muOS/resources dist/muOS/Grout/
+      - chmod +x dist/muOS/Grout/grout dist/muOS/Grout/mux_launch.sh
+      - cd dist/muOS && zip -r ../Grout.muxapp Grout
     silent: true
 
   package-knulli:
     desc: Package for Knulli
     cmds:
-      - rm -rf build64/Knulli
-      - mkdir -p build64/Knulli/Grout/lib
-      - cp build64/grout scripts/Knulli/Grout.sh scripts/Knulli/logo.png README.md LICENSE build64/Knulli/Grout
-      - cp -R build64/lib/* build64/Knulli/Grout/lib/
-      - chmod +x build64/Knulli/Grout/grout build64/Knulli/Grout/Grout.sh
+      - rm -rf dist/Knulli
+      - mkdir -p dist/Knulli/Grout/lib
+      - cp build64/grout scripts/Knulli/Grout.sh scripts/Knulli/logo.png README.md LICENSE dist/Knulli/Grout
+      - cp -R build64/lib/* dist/Knulli/Grout/lib/
+      - chmod +x dist/Knulli/Grout/grout dist/Knulli/Grout/Grout.sh
     silent: true
 
   package-spruce:
     desc: Package for Spruce
     cmds:
-      - rm -rf build64/Spruce
-      - mkdir -p build64/Spruce/Grout/grout/lib
-      - cp scripts/Spruce/* README.md LICENSE build64/Spruce/Grout
-      - cp build64/grout build64/Spruce/Grout/grout
-      - cp -R build64/lib/* build64/Spruce/Grout/grout/lib/
-      - chmod +x build64/Spruce/Grout/grout/grout build64/Spruce/Grout/launch.sh build64/Spruce/Grout/launch-universal.sh
+      - rm -rf dist/Spruce
+      - mkdir -p dist/Spruce/Grout/grout/lib
+      - cp scripts/Spruce/* README.md LICENSE dist/Spruce/Grout
+      - cp build64/grout dist/Spruce/Grout/grout
+      - cp -R build64/lib/* dist/Spruce/Grout/grout/lib/
+      - chmod +x dist/Spruce/Grout/grout/grout dist/Spruce/Grout/launch.sh dist/Spruce/Grout/launch-universal.sh
     silent: true
 
   package-allium:
     desc: Package for Allium
     cmds:
-      - rm -rf build64/Allium
-      - mkdir -p build64/Allium/Grout.pak/grout/lib
-      - cp -R scripts/Allium/* build64/Allium/Grout.pak
-      - cp build32/grout README.md LICENSE build64/Allium/Grout.pak/grout
-#      - cp -R build64/lib/* build64/Allium/Grout.pak/grout/lib/ # Come back for these libs
+      - rm -rf dist/Allium
+      - mkdir -p dist/Allium/Grout.pak/grout/lib
+      - cp -R scripts/Allium/* dist/Allium/Grout.pak
+      - cp build32/grout README.md LICENSE dist/Allium/Grout.pak/grout
+      - cp -R vendored/miyoo/* dist/Allium/Grout.pak/grout/lib/
     silent: true
 
   package-onion:
     desc: Package for Onion
     cmds:
-      - rm -rf build64/Onion
-      - mkdir -p build64/Onion/Grout/grout/lib
-      - cp -R scripts/Onion/* build64/Onion/Grout
-      - cp build32/grout README.md LICENSE build64/Onion/Grout/grout
-#      - cp -R build64/lib/* build64/Onion/Grout/grout/lib/ # TODO: bundle Miyoo SDL2 libs
+      - rm -rf dist/Onion
+      - mkdir -p dist/Onion/Grout/grout/lib
+      - cp -R scripts/Onion/* dist/Onion/Grout
+      - cp build32/grout README.md LICENSE dist/Onion/Grout/grout
+      - cp -R vendored/miyoo/* dist/Onion/Grout/grout/lib/
     silent: true
 
   package-rocknix:
     desc: Package for ROCKNIX
     cmds:
-      - rm -rf build64/ROCKNIX
-      - mkdir -p build64/ROCKNIX/Grout/lib
-      - cp scripts/ROCKNIX/Grout.sh build64/ROCKNIX/
-      - cp build64/grout scripts/ROCKNIX/logo.png README.md LICENSE build64/ROCKNIX/Grout/
-      - cp -R build64/lib/* build64/ROCKNIX/Grout/lib/
-      - chmod +x build64/ROCKNIX/Grout/grout build64/ROCKNIX/Grout.sh
+      - rm -rf dist/ROCKNIX
+      - mkdir -p dist/ROCKNIX/Grout/lib
+      - cp scripts/ROCKNIX/Grout.sh dist/ROCKNIX/
+      - cp build64/grout scripts/ROCKNIX/logo.png README.md LICENSE dist/ROCKNIX/Grout/
+      - cp -R build64/lib/* dist/ROCKNIX/Grout/lib/
+      - chmod +x dist/ROCKNIX/Grout/grout dist/ROCKNIX/Grout.sh
     silent: true
 
   package-trimui:
     desc: Package for Trimui
     cmds:
-      - rm -rf build64/Trimui
-      - mkdir -p build64/Trimui/Grout/grout/lib
-      - cp scripts/Trimui/* README.md LICENSE build64/Trimui/Grout
-      - cp build64/grout build64/Trimui/Grout/grout
-      - cp -R build64/lib/* build64/Trimui/Grout/grout/lib/
-      - chmod +x build64/Trimui/Grout/grout/grout build64/Trimui/Grout/launch.sh
+      - rm -rf dist/Trimui
+      - mkdir -p dist/Trimui/Grout/grout/lib
+      - cp scripts/Trimui/* README.md LICENSE dist/Trimui/Grout
+      - cp build64/grout dist/Trimui/Grout/grout
+      - cp -R build64/lib/* dist/Trimui/Grout/grout/lib/
+      - chmod +x dist/Trimui/Grout/grout/grout dist/Trimui/Grout/launch.sh
     silent: true
 
   package-batocera:
     desc: Package for Batocera
     cmds:
-      - rm -rf build64/Batocera
-      - mkdir -p build64/Batocera/Grout/lib
-      - cp scripts/Batocera/Grout.sh build64/Batocera/
-      - cp build64/grout README.md LICENSE build64/Batocera/Grout/
-      - cp -R build64/lib/* build64/Batocera/Grout/lib/
-      - chmod +x build64/Batocera/Grout/grout build64/Batocera/Grout.sh
+      - rm -rf dist/Batocera
+      - mkdir -p dist/Batocera/Grout/lib
+      - cp scripts/Batocera/Grout.sh dist/Batocera/
+      - cp build64/grout README.md LICENSE dist/Batocera/Grout/
+      - cp -R build64/lib/* dist/Batocera/Grout/lib/
+      - chmod +x dist/Batocera/Grout/grout dist/Batocera/Grout.sh
     silent: true
 
   batocera-amd64:
@@ -182,12 +182,12 @@ tasks:
     cmds:
       - task: build-amd64
       - task: extract-amd64
-      - rm -rf build/Batocera
-      - mkdir -p build/Batocera/Grout/lib
-      - cp scripts/Batocera/Grout.sh build/Batocera/
-      - cp build/grout README.md LICENSE build/Batocera/Grout/
-      - cp -R build/lib/* build/Batocera/Grout/lib/
-      - chmod +x build/Batocera/Grout/grout build/Batocera/Grout.sh
+      - rm -rf dist/Batocera
+      - mkdir -p dist/Batocera/Grout/lib
+      - cp scripts/Batocera/Grout.sh dist/Batocera/
+      - cp build/grout README.md LICENSE dist/Batocera/Grout/
+      - cp -R build/lib/* dist/Batocera/Grout/lib/
+      - chmod +x dist/Batocera/Grout/grout dist/Batocera/Grout.sh
     silent: true
 
   all:
@@ -236,7 +236,7 @@ tasks:
     desc: Deploy to NextUI device via ADB
     cmds:
       - adb shell rm -rf /mnt/SDCARD/Tools/tg5040/Grout.pak
-      - adb push build64/Grout.pak /mnt/SDCARD/Tools/tg5040
+      - adb push dist/Grout.pak /mnt/SDCARD/Tools/tg5040
       - adb push config-platformless.json /mnt/SDCARD/Tools/tg5040/Grout.pak/config.json
     silent: true
 
@@ -244,7 +244,7 @@ tasks:
     desc: Deploy to muOS device via ADB (SD1)
     cmds:
       - adb shell rm -rf /mnt/mmc/MUOS/application/Grout
-      - adb push build64/muOS/Grout /mnt/mmc/MUOS/application
+      - adb push dist/muOS/Grout /mnt/mmc/MUOS/application
       - adb push config-platformless.json /mnt/mmc/MUOS/application/Grout/config.json
     silent: true
 
@@ -252,7 +252,7 @@ tasks:
     desc: Deploy to muOS device via ADB (SD2)
     cmds:
       - adb shell rm -rf /mnt/sdcard/MUOS/application/Grout
-      - adb push build64/muOS/Grout /mnt/sdcard/MUOS/application
+      - adb push dist/muOS/Grout /mnt/sdcard/MUOS/application
       - adb push config-platformless.json /mnt/sdcard/MUOS/application/Grout/config.json
     silent: true
 
@@ -260,7 +260,7 @@ tasks:
     desc: Deploy to Knulli device via ADB
     cmds:
       - adb shell rm -rf /userdata/roms/ports/Grout
-      - adb push build64/Knulli/Grout /userdata/roms/ports
+      - adb push dist/Knulli/Grout /userdata/roms/ports
       - adb push config-platformless.json /userdata/roms/ports/Grout/config.json
     silent: true
 
@@ -337,7 +337,7 @@ tasks:
   clean:
     desc: Remove build artifacts
     cmds:
-      - rm -rf build64 build32
+      - rm -rf build64 build32 dist
     silent: true
 
   hooks-setup:

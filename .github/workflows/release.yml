@@ -47,13 +47,6 @@ jobs:
                --arg changelog "${{ inputs.changelog }}" \
                '.version = $version | .changelog[$version] = $changelog' \
                pak.json > pak.json.tmp && mv pak.json.tmp pak.json
-
-            # Update build pak.json (will be copied during build)
-            mkdir -p build64/Grout.pak
-            jq --arg version "${{ steps.version.outputs.value }}" \
-               --arg changelog "${{ inputs.changelog }}" \
-               '.version = $version | .changelog[$version] = $changelog' \
-               pak.json > build64/Grout.pak/pak.json
           else
             echo "Version is already ${{ steps.version.outputs.value }}, skipping pak.json update"
           fi
@@ -86,39 +79,39 @@ jobs:
 
       - name: Create NextUI distribution
         run: |
-          cd build64/Grout.pak
+          cd dist/Grout.pak
           zip -r ../Grout.pak.zip .
 
       - name: Create muOS distribution
         run: |
-          cd build64/muOS
+          cd dist/muOS
           zip -r Grout.muxapp Grout
           mv Grout.muxapp ../Grout.muxapp
 
       - name: Create Knulli distribution
         run: |
-          cd build64/Knulli
+          cd dist/Knulli
           zip -r ../Grout-Knulli.zip Grout
 
       - name: Create spruce distribution
         run: |
-          cd build64/Spruce
+          cd dist/Spruce
           zip -r Grout.spruce.zip Grout
           mv Grout.spruce.zip ../Grout.spruce.zip
 
       - name: Create ROCKNIX distribution
         run: |
-          cd build64/ROCKNIX
+          cd dist/ROCKNIX
           zip -r ../Grout-ROCKNIX.zip Grout.sh Grout
 
       - name: Create Trimui distribution
         run: |
-          cd build64/Trimui
+          cd dist/Trimui
           zip -r ../Grout-Trimui.zip Grout
 
       - name: Create Batocera distribution
         run: |
-          cd build64/Batocera
+          cd dist/Batocera
           zip -r ../Grout-Batocera.zip Grout.sh Grout
 
       - name: Create GitHub Release
@@ -133,13 +126,13 @@ jobs:
 
             ${{ inputs.beta && format('Built from branch: `{0}`', github.ref_name) || '' }}
           files: |
-            build64/Grout.pak.zip
-            build64/Grout.muxapp
-            build64/Grout.spruce.zip
-            build64/Grout-Knulli.zip
-            build64/Grout-ROCKNIX.zip
-            build64/Grout-Trimui.zip
-            build64/Grout-Batocera.zip
+            dist/Grout.pak.zip
+            dist/Grout.muxapp
+            dist/Grout.spruce.zip
+            dist/Grout-Knulli.zip
+            dist/Grout-ROCKNIX.zip
+            dist/Grout-Trimui.zip
+            dist/Grout-Batocera.zip
             build64/grout
           draft: false
           prerelease: ${{ inputs.beta }}

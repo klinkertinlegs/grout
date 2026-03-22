@@ -8,6 +8,7 @@
 # Build
 build64/
 build32/
+dist/
 build-miyoo/
 grout
 app/app
