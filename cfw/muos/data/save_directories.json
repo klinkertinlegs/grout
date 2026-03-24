@@ -271,11 +271,11 @@
     "file/External"
   ],
   "psp": [
-    "file/PPSSPP (External)",
+    "file/PPSSPP-Ext",
     "file/PPSSPP"
   ],
   "psx": [
-    "file/PCSX ReARMed",
+    "file/PCSX-ReARMed",
     "file/Beetle PSX",
     "file/DuckStation",
     "file/SwanStation"

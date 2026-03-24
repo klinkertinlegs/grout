@@ -13,6 +13,7 @@ Grout has been tested on the following devices running ROCKNIX:
 | Anbernic     | RG DS    |
 | Retroid      | Flip 2   |
 | Powkiddy     | RGB30    |
+| Powkiddy     | X55      |
 
 _Please help verify compatibility on other devices by reporting your results!_
 
