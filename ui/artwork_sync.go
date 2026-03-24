@@ -8,6 +8,7 @@ import (
 	"grout/internal/fileutil"
 	"grout/internal/imageutil"
 	"grout/romm"
+	"net/url"
 	"path/filepath"
 	"sync"
 	"sync/atomic"
@@ -290,6 +291,19 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 
 	finalCount := int(atomic.LoadInt32(&successCount))
 	logger.Info("Artwork sync complete", "success", finalCount, "failed", len(res.Failed))
+
+	for _, failed := range res.Failed {
+		path := failed.Download.URL
+		if u, err := url.Parse(failed.Download.URL); err == nil {
+			path = u.Path
+		}
+		logger.Error("Failed to download artwork",
+			"path", path,
+			"name", failed.Download.DisplayName,
+			"timeout", failed.Download.Timeout,
+			"error", failed.Error,
+		)
+	}
 
 	if finalCount > 0 {
 		gaba.ConfirmationMessage(

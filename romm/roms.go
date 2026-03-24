@@ -82,7 +82,6 @@ type Rom struct {
 	MissingFromFs         bool           `json:"missing_from_fs,omitempty"`
 	Siblings              []any          `json:"siblings,omitempty"`
 	PathVideo             string         `json:"path_video,omitempty"`
-	RAHash                string         `json:"ra_hash,omitempty"`
 	ScreenScraperMetadata ScreenScrapper `json:"ss_metadata,omitempty"`
 }
 
@@ -206,6 +205,20 @@ func (c *Client) DownloadRoms(romIDs []int) ([]byte, error) {
 	return c.doRequestRaw("GET", path, nil)
 }
 
+func joinPathWithQuery(base string, elem ...string) (string, error) {
+	last := elem[len(elem)-1]
+	// because url.JoinPath doesn't handle query parameters without encoding all the string
+	// we need to check if the last element contains a "?" and split it before joining
+	if idx := strings.Index(last, "?"); idx != -1 {
+		joined, err := url.JoinPath(base, append(elem[:len(elem)-1], last[:idx])...)
+		if err != nil {
+			return "", err
+		}
+		return joined + last[idx:], nil
+	}
+	return url.JoinPath(base, elem...)
+}
+
 func (r Rom) GetGamePage(host Host) string {
 	u, _ := url.JoinPath(host.URL(), "rom", strconv.Itoa(r.ID))
 	return u
@@ -308,9 +321,9 @@ func (r Rom) GetArtworkURL(kind artutil.ArtKind, host Host) string {
 	} else if kind == artutil.ArtKindBox3D {
 		if r.ScreenScraperMetadata.Box3DPath != "" {
 			if !strings.Contains(r.ScreenScraperMetadata.Box3DPath, RommAssetPrefix) {
-				coverURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.Box3DPath)
+				coverURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.Box3DPath)
 			} else {
-				coverURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.Box3DPath)
+				coverURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.Box3DPath)
 			}
 			boxPath = r.ScreenScraperMetadata.Box3DPath
 		} else if r.ScreenScraperMetadata.Box3DURL != "" {
@@ -320,9 +333,9 @@ func (r Rom) GetArtworkURL(kind artutil.ArtKind, host Host) string {
 	} else if kind == artutil.ArtKindMixImage {
 		if r.ScreenScraperMetadata.MiximagePath != "" {
 			if !strings.Contains(r.ScreenScraperMetadata.MiximagePath, RommAssetPrefix) {
-				coverURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.MiximagePath)
+				coverURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.MiximagePath)
 			} else {
-				coverURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.MiximagePath)
+				coverURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.MiximagePath)
 			}
 			boxPath = r.ScreenScraperMetadata.MiximagePath
 		} else if r.ScreenScraperMetadata.MiximageURL != "" {
@@ -333,10 +346,10 @@ func (r Rom) GetArtworkURL(kind artutil.ArtKind, host Host) string {
 
 	if kind == artutil.ArtKindDefault || coverURL == "" {
 		if r.PathCoverSmall != "" {
-			coverURL, err = url.JoinPath(host.URL(), r.PathCoverSmall)
+			coverURL, err = joinPathWithQuery(host.URL(), r.PathCoverSmall)
 			boxPath = r.PathCoverSmall
 		} else if r.PathCoverLarge != "" {
-			coverURL, err = url.JoinPath(host.URL(), r.PathCoverLarge)
+			coverURL, err = joinPathWithQuery(host.URL(), r.PathCoverLarge)
 			boxPath = r.PathCoverLarge
 		} else if r.URLCover != "" {
 			coverURL = r.URLCover
@@ -357,9 +370,9 @@ func (r Rom) GetScreenshotURL(host Host) string {
 	var err error
 	logger := gaba.GetLogger()
 	if len(r.UserScreenshots) > 0 {
-		screenshotURL, err = url.JoinPath(host.URL(), r.UserScreenshots[0].URLPath)
+		screenshotURL, err = joinPathWithQuery(host.URL(), r.UserScreenshots[0].URLPath)
 	} else if len(r.MergedScreenshots) > 0 {
-		screenshotURL, err = url.JoinPath(host.URL(), r.MergedScreenshots[0])
+		screenshotURL, err = joinPathWithQuery(host.URL(), r.MergedScreenshots[0])
 	} else if r.ScreenScraperMetadata.ScreenshotURL != "" {
 		screenshotURL = r.ScreenScraperMetadata.ScreenshotURL
 	}
@@ -377,9 +390,9 @@ func (r Rom) GetSplashArtURL(kind artutil.ArtKind, host Host) string {
 	if kind == artutil.ArtKindMarquee {
 		if r.ScreenScraperMetadata.MarqueePath != "" {
 			if !strings.Contains(r.ScreenScraperMetadata.MarqueePath, RommAssetPrefix) {
-				splashArtURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.MarqueePath)
+				splashArtURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.MarqueePath)
 			} else {
-				splashArtURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.MarqueePath)
+				splashArtURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.MarqueePath)
 			}
 		} else if r.ScreenScraperMetadata.MarqueeURL != "" {
 			splashArtURL = r.ScreenScraperMetadata.MarqueeURL
@@ -401,9 +414,9 @@ func (r Rom) GetMarqueeURL(host Host) string {
 	marqueeURL := ""
 	if r.ScreenScraperMetadata.MarqueePath != "" {
 		if !strings.Contains(r.ScreenScraperMetadata.MarqueePath, RommAssetPrefix) {
-			marqueeURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.MarqueePath)
+			marqueeURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.MarqueePath)
 		} else {
-			marqueeURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.MarqueePath)
+			marqueeURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.MarqueePath)
 		}
 		if err != nil {
 			gaba.GetLogger().Error("Error joining host URL with marquee path", "error", err, "hostURL", host.ToLoggable(), "marqueePath", r.ScreenScraperMetadata.MarqueePath)
@@ -421,9 +434,9 @@ func (r Rom) GetLogoURL(host Host) string {
 	logoURL := ""
 	if r.ScreenScraperMetadata.LogoPath != "" {
 		if !strings.Contains(r.ScreenScraperMetadata.LogoPath, RommAssetPrefix) {
-			logoURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.LogoPath)
+			logoURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.LogoPath)
 		} else {
-			logoURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.LogoPath)
+			logoURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.LogoPath)
 		}
 		if err != nil {
 			gaba.GetLogger().Error("Error joining host URL with logo path", "error", err, "hostURL", host.ToLoggable(), "logoPath", r.ScreenScraperMetadata.LogoPath)
@@ -441,9 +454,9 @@ func (r Rom) GetVideoURL(host Host) string {
 	videoURL := ""
 	if r.ScreenScraperMetadata.VideoPath != "" {
 		if !strings.Contains(r.ScreenScraperMetadata.VideoPath, RommAssetPrefix) {
-			videoURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.VideoPath)
+			videoURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.VideoPath)
 		} else {
-			videoURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.VideoPath)
+			videoURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.VideoPath)
 		}
 		if err != nil {
 			gaba.GetLogger().Error("Error joining host URL with video path", "error", err, "hostURL", host.ToLoggable(), "videoPath", r.ScreenScraperMetadata.VideoPath)
@@ -461,9 +474,9 @@ func (r Rom) GetBezelURL(host Host) string {
 	bezelURL := ""
 	if r.ScreenScraperMetadata.BezelPath != "" {
 		if !strings.Contains(r.ScreenScraperMetadata.BezelPath, RommAssetPrefix) {
-			bezelURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.BezelPath)
+			bezelURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.BezelPath)
 		} else {
-			bezelURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.BezelPath)
+			bezelURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.BezelPath)
 		}
 		if err != nil {
 			gaba.GetLogger().Error("Error joining host URL with bezel path", "error", err, "hostURL", host.ToLoggable(), "bezelPath", r.ScreenScraperMetadata.BezelPath)
@@ -481,9 +494,9 @@ func (r Rom) GetManualURL(host Host) string {
 	var err error
 	if r.PathManual != "" && r.HasManual {
 		if !strings.Contains(r.PathManual, RommAssetPrefix) {
-			manualURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.PathManual)
+			manualURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.PathManual)
 		} else {
-			manualURL, err = url.JoinPath(host.URL(), r.PathManual)
+			manualURL, err = joinPathWithQuery(host.URL(), r.PathManual)
 		}
 		if err != nil {
 			gaba.GetLogger().Error("Error joining host URL with manual path", "error", err, "hostURL", host.ToLoggable(), "manualPath", r.PathManual)
@@ -506,9 +519,9 @@ func (r Rom) GetBoxbackURL(host Host) string {
 	boxbackURL := ""
 	if r.ScreenScraperMetadata.Box2DBackPath != "" {
 		if !strings.Contains(r.ScreenScraperMetadata.Box2DBackPath, RommAssetPrefix) {
-			boxbackURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.Box2DBackPath)
+			boxbackURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.Box2DBackPath)
 		} else {
-			boxbackURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.Box2DBackPath)
+			boxbackURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.Box2DBackPath)
 		}
 		if err != nil {
 			gaba.GetLogger().Error("Error joining host URL with boxback path", "error", err, "hostURL", host.ToLoggable(), "boxbackPath", r.ScreenScraperMetadata.Box2DBackPath)
@@ -527,9 +540,9 @@ func (r Rom) GetFanartURL(host Host) string {
 	fanartURL := ""
 	if r.ScreenScraperMetadata.FanartPath != "" {
 		if !strings.Contains(r.ScreenScraperMetadata.FanartPath, RommAssetPrefix) {
-			fanartURL, err = url.JoinPath(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.FanartPath)
+			fanartURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.FanartPath)
 		} else {
-			fanartURL, err = url.JoinPath(host.URL(), r.ScreenScraperMetadata.FanartPath)
+			fanartURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.FanartPath)
 		}
 		if err != nil {
 			gaba.GetLogger().Error("Error joining host URL with fanart path", "error", err, "hostURL", host.ToLoggable(), "fanartPath", r.ScreenScraperMetadata.FanartPath)
