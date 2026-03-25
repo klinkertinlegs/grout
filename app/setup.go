@@ -7,6 +7,7 @@ import (
 	"grout/cfw/allium"
 	"grout/cfw/muos"
 	"grout/cfw/onion"
+	"grout/cfw/spruce"
 	"grout/internal"
 	"grout/internal/environment"
 	"grout/internal/fileutil"
@@ -49,6 +50,8 @@ func setup() SetupResult {
 					mappingBytes, mappingErr = allium.GetInputMappingBytes()
 				case cfw.Onion:
 					mappingBytes, mappingErr = onion.GetInputMappingBytes()
+				case cfw.Spruce:
+					mappingBytes, mappingErr = spruce.GetInputMappingBytes()
 				}
 				if mappingBytes != nil && mappingErr == nil {
 					gaba.SetInputMappingBytes(mappingBytes)
