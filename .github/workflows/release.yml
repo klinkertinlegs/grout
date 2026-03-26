@@ -90,9 +90,6 @@ jobs:
       - name: Package ARM64 platforms
         run: task package-next package-muos package-knulli package-spruce package-rocknix package-trimui package-minui package-batocera
 
-      - name: Rename binary
-        run: cp build64/grout build64/grout-arm64
-
       - name: Create distributions
         run: |
           cd dist/Grout.pak && zip -r ../Grout.pak.zip . && cd ../..
@@ -118,7 +115,6 @@ jobs:
             dist/Grout-MinUI-arm64.zip
             dist/Grout-Batocera-arm64.zip
             build64/grout
-            build64/grout-arm64
 
   build-amd64:
     needs: prepare
@@ -143,9 +139,6 @@ jobs:
       - name: Package Batocera AMD64
         run: task package-batocera-amd64
 
-      - name: Rename binary
-        run: cp build/grout build/grout-amd64
-
       - name: Create distribution
         run: |
           cd dist/Batocera-amd64 && zip -r ../Grout-Batocera-amd64.zip Grout.sh Grout
@@ -156,7 +149,6 @@ jobs:
           name: amd64-artifacts
           path: |
             dist/Grout-Batocera-amd64.zip
-            build/grout-amd64
 
   build-x86:
     needs: prepare
@@ -184,9 +176,6 @@ jobs:
       - name: Package Batocera x86
         run: task package-batocera-x86
 
-      - name: Rename binary
-        run: cp buildx86/grout buildx86/grout-x86
-
       - name: Create distribution
         run: |
           cd dist/Batocera-x86 && zip -r ../Grout-Batocera-x86.zip Grout.sh Grout
@@ -197,7 +186,6 @@ jobs:
           name: x86-artifacts
           path: |
             dist/Grout-Batocera-x86.zip
-            buildx86/grout-x86
 
   build-arm32:
     needs: prepare
@@ -225,9 +213,6 @@ jobs:
       - name: Package ARM32 platforms
         run: task package-allium package-onion package-minui-arm32
 
-      - name: Rename binary
-        run: cp build32/grout build32/grout-arm32
-
       - name: Create distributions
         run: |
           cd dist/Allium && zip -r ../Grout-Allium.zip Grout.pak && cd ../..
@@ -242,7 +227,6 @@ jobs:
             dist/Grout-Allium.zip
             dist/Grout-Onion.zip
             dist/Grout-MinUI-arm32.zip
-            build32/grout-arm32
 
   release:
     needs: [prepare, build-arm64, build-amd64, build-x86, build-arm32]
@@ -279,10 +263,6 @@ jobs:
             dist/Grout-Batocera-x86.zip
             dist/Grout-Batocera-amd64.zip
             build64/grout
-            build64/grout-arm64
-            build/grout-amd64
-            buildx86/grout-x86
-            build32/grout-arm32
           draft: false
           prerelease: ${{ inputs.beta }}
 
@@ -424,3 +404,8 @@ jobs:
             git commit -m "Update versions.json for ${{ needs.prepare.outputs.version }}"
             git push
           fi
+
+      - name: Trigger docs deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run docs.yml
