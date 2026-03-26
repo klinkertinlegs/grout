@@ -285,3 +285,136 @@ jobs:
             build32/grout-arm32
           draft: false
           prerelease: ${{ inputs.beta }}
+
+  update-versions:
+    needs: [prepare, release]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Update versions.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          IS_BETA: ${{ inputs.beta }}
+          CHANGELOG: ${{ inputs.changelog }}
+        run: |
+          REPO="rommapp/grout"
+          DOWNLOAD_BASE="https://github.com/${REPO}/releases/download/${VERSION}"
+
+          # Hash local build artifacts and get their sizes
+          get_asset_info() {
+            local path="$1"
+            if [ -f "$path" ]; then
+              local size=$(stat --format=%s "$path")
+              local sha256=$(sha256sum "$path" | cut -d' ' -f1)
+              echo "${size} ${sha256}"
+            else
+              echo "0 "
+            fi
+          }
+
+          # Verify uploaded release assets match local build artifacts
+          verify_upload() {
+            local name="$1"
+            local expected_sha256="$2"
+            if [ -z "$expected_sha256" ]; then return; fi
+
+            local url="${DOWNLOAD_BASE}/${name}"
+            if curl -sfL -o "/tmp/${name}" "$url"; then
+              local actual_sha256=$(sha256sum "/tmp/${name}" | cut -d' ' -f1)
+              rm -f "/tmp/${name}"
+              if [ "$actual_sha256" != "$expected_sha256" ]; then
+                echo "::error::Upload verification failed for ${name}: expected ${expected_sha256}, got ${actual_sha256}"
+                exit 1
+              fi
+              echo "Verified ${name}: ${actual_sha256}"
+            else
+              echo "::warning::Could not download ${name} for verification"
+            fi
+          }
+
+          # Distribution zip assets
+          DIST_ASSETS=(
+            "Grout.pak.zip:dist/Grout.pak.zip"
+            "Grout.muxapp:dist/Grout.muxapp"
+            "Grout-Knulli.zip:dist/Grout-Knulli.zip"
+            "Grout.spruce.zip:dist/Grout.spruce.zip"
+            "Grout-ROCKNIX.zip:dist/Grout-ROCKNIX.zip"
+            "Grout-Trimui.zip:dist/Grout-Trimui.zip"
+            "Grout-Allium.zip:dist/Grout-Allium.zip"
+            "Grout-Onion.zip:dist/Grout-Onion.zip"
+            "Grout-MinUI-arm64.zip:dist/Grout-MinUI-arm64.zip"
+            "Grout-MinUI-arm32.zip:dist/Grout-MinUI-arm32.zip"
+            "Grout-Batocera-arm64.zip:dist/Grout-Batocera-arm64.zip"
+            "Grout-Batocera-amd64.zip:dist/Grout-Batocera-amd64.zip"
+            "Grout-Batocera-x86.zip:dist/Grout-Batocera-x86.zip"
+          )
+
+          # Build the assets JSON object
+          ASSETS_JSON="{}"
+          for entry in "${DIST_ASSETS[@]}"; do
+            name="${entry%%:*}"
+            path="${entry##*:}"
+
+            read size sha256 <<< $(get_asset_info "$path")
+            if [ "$size" = "0" ]; then
+              echo "::warning::Asset not found: ${path}"
+              continue
+            fi
+
+            verify_upload "$name" "$sha256"
+
+            ASSETS_JSON=$(echo "$ASSETS_JSON" | jq \
+              --arg name "$name" \
+              --arg url "${DOWNLOAD_BASE}/${name}" \
+              --argjson size "${size}" \
+              --arg sha256 "${sha256}" \
+              '.[$name] = { url: $url, size: $size, sha256: $sha256 }')
+          done
+
+          # Build the release entry
+          RELEASE_ENTRY=$(jq -n \
+            --arg version "$VERSION" \
+            --arg notes "$CHANGELOG" \
+            --argjson assets "$ASSETS_JSON" \
+            '{ version: $version, notes: $notes, assets: $assets }')
+
+          # Parse major.minor.patch for the romm key
+          ROMM_KEY=$(echo "$VERSION" | sed 's/^v//' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
+
+          # Update versions.json
+          if [ "$IS_BETA" = "true" ]; then
+            jq --argjson entry "$RELEASE_ENTRY" --arg key "$ROMM_KEY" \
+              '.beta = $entry | .romm[$key] = $entry' \
+              docs/versions.json > docs/versions.json.tmp
+          else
+            jq --argjson entry "$RELEASE_ENTRY" --arg key "$ROMM_KEY" \
+              '.stable = $entry | .romm[$key] = $entry' \
+              docs/versions.json > docs/versions.json.tmp
+          fi
+
+          mv docs/versions.json.tmp docs/versions.json
+
+      - name: Commit and push versions.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet docs/versions.json; then
+            echo "No changes to versions.json"
+          else
+            git add docs/versions.json
+            git commit -m "Update versions.json for ${{ needs.prepare.outputs.version }}"
+            git push
+          fi

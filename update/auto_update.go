@@ -4,6 +4,7 @@ import (
 	"grout/cfw"
 	"grout/internal"
 	"grout/romm"
+	"sync"
 	"sync/atomic"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -13,13 +14,14 @@ const updateIcon = "\U000F06B0"
 
 type AutoUpdate struct {
 	cfwType         cfw.CFW
-	releaseChannel  internal.ReleaseChannel
 	host            *romm.Host
 	icon            *gaba.DynamicStatusBarIcon
 	running         atomic.Bool
 	updateAvailable atomic.Bool
 	done            chan struct{}
-	updateInfo      *Info
+	mu              sync.Mutex
+	releaseChannel  internal.ReleaseChannel
+	updateInfo      atomic.Pointer[Info]
 }
 
 func NewAutoUpdate(c cfw.CFW, r internal.ReleaseChannel, host *romm.Host) *AutoUpdate {
@@ -53,7 +55,7 @@ func (a *AutoUpdate) UpdateAvailable() bool {
 }
 
 func (a *AutoUpdate) UpdateInfo() *Info {
-	return a.updateInfo
+	return a.updateInfo.Load()
 }
 
 // Recheck updates the release channel and re-runs the update check.
@@ -63,9 +65,12 @@ func (a *AutoUpdate) Recheck(releaseChannel internal.ReleaseChannel) {
 		return // Already running, skip
 	}
 
+	a.mu.Lock()
 	a.releaseChannel = releaseChannel
+	a.mu.Unlock()
+
 	a.updateAvailable.Store(false)
-	a.updateInfo = nil
+	a.updateInfo.Store(nil)
 	a.icon.SetText("") // Clear the icon
 
 	a.Start()
@@ -80,13 +85,17 @@ func (a *AutoUpdate) run() {
 
 	logger.Debug("AutoUpdate: Checking for updates in background")
 
-	info, err := CheckForUpdate(a.cfwType, a.releaseChannel, a.host)
+	a.mu.Lock()
+	channel := a.releaseChannel
+	a.mu.Unlock()
+
+	info, err := CheckForUpdate(a.cfwType, channel, a.host)
 	if err != nil {
 		logger.Debug("AutoUpdate: Failed to check for updates", "error", err)
 		return
 	}
 
-	a.updateInfo = info
+	a.updateInfo.Store(info)
 
 	if info.UpdateAvailable {
 		logger.Debug("AutoUpdate: Update available", "current", info.CurrentVersion, "latest", info.LatestVersion)
