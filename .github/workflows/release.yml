@@ -257,20 +257,20 @@ jobs:
 
             ${{ inputs.beta && format('Built from branch: `{0}`', github.ref_name) || '' }}
           files: |
-            dist/Grout.pak.zip
-            dist/Grout.muxapp
-            dist/Grout.spruce.zip
-            dist/Grout-Allium.zip
-            dist/Grout-Onion.zip
-            dist/Grout-Knulli.zip
-            dist/Grout-ROCKNIX.zip
-            dist/Grout-Trimui.zip
-            dist/Grout-MinUI-arm64.zip
-            dist/Grout-MinUI-arm32.zip
-            dist/Grout-Batocera-arm64.zip
-            dist/Grout-Batocera-x86.zip
-            dist/Grout-Batocera-amd64.zip
-            build64/grout
+            **/Grout.pak.zip
+            **/Grout.muxapp
+            **/Grout.spruce.zip
+            **/Grout-Allium.zip
+            **/Grout-Onion.zip
+            **/Grout-Knulli.zip
+            **/Grout-ROCKNIX.zip
+            **/Grout-Trimui.zip
+            **/Grout-MinUI-arm64.zip
+            **/Grout-MinUI-arm32.zip
+            **/Grout-Batocera-arm64.zip
+            **/Grout-Batocera-x86.zip
+            **/Grout-Batocera-amd64.zip
+            **/grout
           draft: false
           prerelease: ${{ inputs.beta }}
 
@@ -332,28 +332,31 @@ jobs:
             fi
           }
 
-          # Distribution zip assets
-          DIST_ASSETS=(
-            "Grout.pak.zip:dist/Grout.pak.zip"
-            "Grout.muxapp:dist/Grout.muxapp"
-            "Grout-Knulli.zip:dist/Grout-Knulli.zip"
-            "Grout.spruce.zip:dist/Grout.spruce.zip"
-            "Grout-ROCKNIX.zip:dist/Grout-ROCKNIX.zip"
-            "Grout-Trimui.zip:dist/Grout-Trimui.zip"
-            "Grout-Allium.zip:dist/Grout-Allium.zip"
-            "Grout-Onion.zip:dist/Grout-Onion.zip"
-            "Grout-MinUI-arm64.zip:dist/Grout-MinUI-arm64.zip"
-            "Grout-MinUI-arm32.zip:dist/Grout-MinUI-arm32.zip"
-            "Grout-Batocera-arm64.zip:dist/Grout-Batocera-arm64.zip"
-            "Grout-Batocera-amd64.zip:dist/Grout-Batocera-amd64.zip"
-            "Grout-Batocera-x86.zip:dist/Grout-Batocera-x86.zip"
+          # Distribution zip assets (name only — path is resolved via find)
+          DIST_NAMES=(
+            "Grout.pak.zip"
+            "Grout.muxapp"
+            "Grout-Knulli.zip"
+            "Grout.spruce.zip"
+            "Grout-ROCKNIX.zip"
+            "Grout-Trimui.zip"
+            "Grout-Allium.zip"
+            "Grout-Onion.zip"
+            "Grout-MinUI-arm64.zip"
+            "Grout-MinUI-arm32.zip"
+            "Grout-Batocera-arm64.zip"
+            "Grout-Batocera-amd64.zip"
+            "Grout-Batocera-x86.zip"
           )
 
           # Build the assets JSON object
           ASSETS_JSON="{}"
-          for entry in "${DIST_ASSETS[@]}"; do
-            name="${entry%%:*}"
-            path="${entry##*:}"
+          for name in "${DIST_NAMES[@]}"; do
+            path=$(find . -name "$name" -type f | head -1)
+            if [ -z "$path" ]; then
+              echo "::warning::Asset not found: ${name}"
+              continue
+            fi
 
             read size sha256 <<< $(get_asset_info "$path")
             if [ "$size" = "0" ]; then
