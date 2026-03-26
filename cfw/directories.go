@@ -174,3 +174,95 @@ func BaseSavePath() string {
 	}
 	return ""
 }
+
+func GetArtMarqueeDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetArtDirectory(romDir)
+	case Knulli:
+		return knulli.GetArtDirectory(romDir)
+	case Batocera:
+		return batocera.GetArtDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetArtVideoDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetVideoDirectory(romDir)
+	case Knulli:
+		return knulli.GetVideoDirectory(romDir)
+	case Batocera:
+		return batocera.GetVideoDirectory(romDir)
+	default:
+		return ""
+
+	}
+}
+
+func GetArtThumbnailDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetArtDirectory(romDir)
+	case Knulli:
+		return knulli.GetArtDirectory(romDir)
+	case Batocera:
+		return knulli.GetArtDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetArtBezelDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetBezelDirectory(romDir)
+	case Knulli:
+		return knulli.GetBezelDirectory(romDir)
+	case Batocera:
+		return batocera.GetBezelDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetManualDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetManualDirectory(romDir)
+	case Knulli:
+		return knulli.GetManualDirectory(romDir)
+	case Batocera:
+		return batocera.GetManualDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetBoxbackDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetArtDirectory(romDir)
+	case Knulli:
+		return knulli.GetArtDirectory(romDir)
+	case Batocera:
+		return batocera.GetArtDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetFanartDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetArtDirectory(romDir)
+	case Knulli:
+		return knulli.GetArtDirectory(romDir)
+	case Batocera:
+		return batocera.GetArtDirectory(romDir)
+	default:
+		return ""
+	}
+}

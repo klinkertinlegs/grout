@@ -286,6 +286,19 @@ func boxArtToIndex(boxArt artutil.ArtKind) int {
 	}
 }
 
+func marqueeArtToIndex(boxArt artutil.ArtKind) int {
+	switch boxArt {
+	case artutil.ArtKindNone:
+		return 0
+	case artutil.ArtKindMarquee:
+		return 1
+	case artutil.ArtKindLogo:
+		return 2
+	default:
+		return 0
+	}
+}
+
 func languageToIndex(lang string) int {
 	switch lang {
 	case "en":

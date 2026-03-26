@@ -17,6 +17,16 @@ import (
 
 var kidModeEnabled atomic.Bool
 
+type AdditionalDownloads struct {
+	Marquee   artutil.ArtKind `json:"marquee,omitempty"`
+	Video     bool            `json:"video,omitempty"`
+	Thumbnail artutil.ArtKind `json:"thumbnail,omitempty"`
+	Bezel     bool            `json:"bezel,omitempty"`
+	Manual    bool            `json:"manual,omitempty"`
+	BoxBack   bool            `json:"box_back,omitempty"`
+	Fanart    bool            `json:"fanart,omitempty"`
+}
+
 // DurationSeconds is a time.Duration that marshals to/from JSON as whole seconds.
 // Existing configs with nanosecond values are handled by detecting large values on unmarshal.
 type DurationSeconds time.Duration
@@ -54,8 +64,8 @@ type Config struct {
 	ShowSmartCollections         bool                        `json:"show_smart_collections"`
 	ShowVirtualCollections       bool                        `json:"show_virtual_collections"`
 	DownloadedGames              DownloadedGamesMode         `json:"downloaded_games,omitempty"`
-	ApiTimeout                   DurationSeconds              `json:"api_timeout"`
-	DownloadTimeout              DurationSeconds              `json:"download_timeout"`
+	ApiTimeout                   DurationSeconds             `json:"api_timeout"`
+	DownloadTimeout              DurationSeconds             `json:"download_timeout"`
 	LogLevel                     LogLevel                    `json:"log_level,omitempty"`
 	Language                     string                      `json:"language,omitempty"`
 	CollectionView               CollectionView              `json:"collection_view,omitempty"`
@@ -64,6 +74,7 @@ type Config struct {
 	ArtKind                      artutil.ArtKind             `json:"art_kind,omitempty"`
 	DownloadArtScreenshotPreview bool                        `json:"download_art_screenshot_preview,omitempty"`
 	DownloadSplashArt            artutil.ArtKind             `json:"download_splash_art,omitempty"`
+	AdditionalDownloads          AdditionalDownloads         `json:"additional_downloads,omitempty"`
 
 	SwapFaceButtons       bool              `json:"swap_face_buttons,omitempty"`
 	PlatformOrder         []string          `json:"platform_order,omitempty"`
@@ -142,6 +153,14 @@ func LoadConfig() (*Config, error) {
 		config.ArtKind = artutil.ArtKindDefault
 	}
 
+	if config.AdditionalDownloads.Thumbnail == "" {
+		config.AdditionalDownloads.Thumbnail = artutil.ArtKindNone
+	}
+
+	if config.AdditionalDownloads.Marquee == "" {
+		config.AdditionalDownloads.Marquee = artutil.ArtKindNone
+	}
+
 	// Load slot preferences from dedicated file
 	config.SlotPreferences = LoadSlotPreferences()
 
@@ -171,6 +190,14 @@ func SaveConfig(config *Config) error {
 
 	if config.ArtKind == "" {
 		config.ArtKind = artutil.ArtKindDefault
+	}
+
+	if config.AdditionalDownloads.Thumbnail == "" {
+		config.AdditionalDownloads.Thumbnail = artutil.ArtKindNone
+	}
+
+	if config.AdditionalDownloads.Marquee == "" {
+		config.AdditionalDownloads.Marquee = artutil.ArtKindNone
 	}
 
 	gaba.SetRawLogLevel(string(config.LogLevel))
@@ -335,6 +362,41 @@ func (c Config) GetArtPreviewDirectory(platform romm.Platform) string {
 func (c Config) GetArtSplashDirectory(platform romm.Platform) string {
 	romDir := c.GetPlatformRomDirectory(platform)
 	return cfw.GetArtSplashDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetArtMarqueeDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtMarqueeDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetArtVideoDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtVideoDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetArtThumbnailDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtThumbnailDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetArtBezelDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtBezelDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetManualDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetManualDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetFanartDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetFanartDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetBoxbackDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetBoxbackDirectory(romDir, platform.FSSlug, platform.Name)
 }
 
 func (c Config) ShowCollections(host romm.Host) bool {
