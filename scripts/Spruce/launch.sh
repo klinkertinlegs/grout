@@ -1,9 +1,7 @@
 #!/bin/sh
 CUR_DIR="$(dirname "$0")"
 cd "$CUR_DIR"/grout || exit 1
-export INPUT_CAPTURE=true
 export CFW=SPRUCE
-#export LD_LIBRARY_PATH=$CUR_DIR/grout/lib:$LD_LIBRARY_PATH
 
 case "$PLATFORM" in
 
@@ -13,7 +11,10 @@ case "$PLATFORM" in
     "A30" )
         echo "A30 detected, setting up environment variables for SDL2"
 #        export LD_LIBRARY_PATH="/mnt/SDCARD/spruce/a30/sdl2:$LD_LIBRARY_PATH"
-        export LD_LIBRARY_PATH="$CUR_DIR/grout/lib32/miyoo:$LD_LIBRARY_PATH"
+        # TODO: try to keep miyoo, but add the subdirectory `sdl2` like in the spruce a30
+        # so... even If i take the content of the spruce a30/sdl2 folder, it does not launch
+        # I really don't understand why
+#        export LD_LIBRARY_PATH="$CUR_DIR/grout/lib32/miyoo:$LD_LIBRARY_PATH"
         export SPRUCE_DEVICE="A30"
 
         ./grout32
@@ -24,7 +25,6 @@ case "$PLATFORM" in
 ############################################################
     "Brick" | "SmartPro" | "SmartProS" )
         echo "Brick/SmartPro/SmartProS detected, setting up environment variables for SDL2"
-#        export LD_LIBRARY_PATH="/mnt/SDCARD/spruce/brick/sdl2:$LD_LIBRARY_PATH"
         export LD_LIBRARY_PATH="$CUR_DIR/grout/lib64:$LD_LIBRARY_PATH"
         export SPRUCE_DEVICE="TRIMUI"
         ./grout64
@@ -34,11 +34,7 @@ case "$PLATFORM" in
 # Miyoo Flip
 ############################################################
     "Flip" )
-#        mkdir "$CUR_DIR"/grout/lib32/
-#        ln -s /mnt/SDCARD/App/PyUI/dll/libSDL2_gfx-1.0.so "$CUR_DIR"/grout/lib32/libSDL2_gfx-1.0.so.0
         echo "Miyoo Flip detected, setting up environment variables for SDL2"
-#        export LD_LIBRARY_PATH="$CUR_DIR/grout/lib:/mnt/SDCARD/App/PyUI/dll:$LD_LIBRARY_PATH"
-#        export LD_LIBRARY_PATH="$CUR_DIR/grout/lib32:$LD_LIBRARY_PATH"
         export LD_LIBRARY_PATH="$CUR_DIR/grout/lib64:$LD_LIBRARY_PATH"
         export SPRUCE_DEVICE="MIYOOFLIP"
         ./grout64
@@ -48,8 +44,6 @@ case "$PLATFORM" in
 ############################################################
     "MiyooMini" )
         echo "Miyoo Mini detected, setting up environment variables for SDL2"
-#        export LD_LIBRARY_PATH="/mnt/SDCARD/spruce/bin/python/lib:$LD_LIBRARY_PATH"
-#        export LD_LIBRARY_PATH="/mnt/SDCARD/spruce/miyoomini/lib:$LD_LIBRARY_PATH"
 
         export SDL_VIDEODRIVER=mmiyoo
         export SDL_AUDIODRIVER=mmiyoo
