@@ -36,4 +36,6 @@ const (
 	ScreenSyncHistory
 	ScreenSaveMapping
 	ScreenServerAddress
+	ScreenToolsSettings
+	ScreenSwitchToToken
 )

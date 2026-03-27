@@ -15,6 +15,7 @@ type Platform struct {
 	ShortName           string     `json:"short_name"`
 	LogoPath            string     `json:"logo_path"`
 	ROMCount            int        `json:"rom_count"`
+	FirmwareCount       int        `json:"firmware_count"`
 	Firmware            []Firmware `json:"Firmware"`
 	CreatedAt           time.Time  `json:"created_at"`
 	UpdatedAt           time.Time  `json:"updated_at"`

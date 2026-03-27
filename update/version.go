@@ -120,14 +120,41 @@ func CompareVersions(current, latest string) int {
 		return -1
 	}
 	if currentHasPrerelease {
-		// Both are prereleases - compare prerelease strings lexicographically
-		// For simplicity, we'll just do a string comparison
-		// In practice, this handles cases like "beta.1" vs "beta.2"
-		if currentVer.Prerelease < latestVer.Prerelease {
-			return -1
+		// Both are prereleases - compare identifiers per semver:
+		// split on ".", compare each segment numerically if both are numbers,
+		// otherwise lexicographically.
+		currentParts := strings.Split(currentVer.Prerelease, ".")
+		latestParts := strings.Split(latestVer.Prerelease, ".")
+		maxLen := len(currentParts)
+		if len(latestParts) > maxLen {
+			maxLen = len(latestParts)
 		}
-		if currentVer.Prerelease > latestVer.Prerelease {
-			return 1
+		for i := 0; i < maxLen; i++ {
+			if i >= len(currentParts) {
+				return -1 // current has fewer identifiers, so it's less
+			}
+			if i >= len(latestParts) {
+				return 1 // latest has fewer identifiers, so current is greater
+			}
+			cNum, cErr := strconv.Atoi(currentParts[i])
+			lNum, lErr := strconv.Atoi(latestParts[i])
+			if cErr == nil && lErr == nil {
+				// Both numeric — compare as integers
+				if cNum < lNum {
+					return -1
+				}
+				if cNum > lNum {
+					return 1
+				}
+			} else {
+				// At least one non-numeric — compare as strings
+				if currentParts[i] < latestParts[i] {
+					return -1
+				}
+				if currentParts[i] > latestParts[i] {
+					return 1
+				}
+			}
 		}
 	}
 

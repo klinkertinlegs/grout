@@ -319,7 +319,7 @@ func (s *GameDetailsScreen) fetchImageFromURL(host romm.Host, imageURL string) [
 		return nil
 	}
 
-	req.SetBasicAuth(host.Username, host.Password)
+	req.Header.Set("Authorization", host.AuthHeader())
 
 	client := &http.Client{Timeout: internal.DefaultHTTPTimeout}
 	resp, err := client.Do(req)

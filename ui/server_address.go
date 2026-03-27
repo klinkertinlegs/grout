@@ -216,10 +216,15 @@ func validateServerAddress(host romm.Host) loginAttemptResult {
 				return classifyLoginError(err), nil
 			}
 
-			loginClient := romm.NewClientFromHost(host, internal.LoginTimeout)
-			err = loginClient.Login(host.Username, host.Password)
-			if err != nil {
-				return classifyLoginError(err), nil
+			client := romm.NewClientFromHost(host, internal.LoginTimeout)
+			if host.HasTokenAuth() {
+				if err := client.ValidateToken(); err != nil {
+					return classifyLoginError(err), nil
+				}
+			} else {
+				if err := client.Login(host.Username, host.Password); err != nil {
+					return classifyLoginError(err), nil
+				}
 			}
 
 			return loginAttemptResult{Success: true}, nil

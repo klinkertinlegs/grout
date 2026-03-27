@@ -2,10 +2,6 @@
 hash = "sha1-cde437c528224c2a08f0719f3e8b923a17642295"
 other = "%d imagens de artwork baixadas com sucesso."
 
-[artwork_sync_confirm]
-hash = "sha1-19bd664135df62cf7f839f7fa5810b40f6e3e007"
-other = "Baixar artwork para %d jogos?"
-
 [artwork_sync_failed]
 hash = "sha1-869ec904d8bde854dcf9489791abb3eef66818f9"
 other = "Falha ao baixar %d imagens de artwork."
@@ -46,10 +42,6 @@ other = "Select Platforms"
 [bios_download_complete]
 hash = "sha1-344ccb404588981250e2016ac355ac798d0b7e31"
 other = "%d arquivo(s) BIOS baixado(s) com sucesso."
-
-[bios_download_complete_with_warnings]
-hash = "sha1-aebdf53b01e8b0931fcbddce77db5b1477cc151f"
-other = "%d arquivo(s) BIOS baixado(s) com %d aviso(s) de hash. Os arquivos podem não ser da versão correta."
 
 [bios_download_failed]
 hash = "sha1-f8f2757f474c368063876856535dc676c1281ff3"
@@ -511,10 +503,6 @@ other = "Ignorar verificação"
 hash = "sha1-dda6ac27b9d3b234a68e8b2c412e90ab5a03a4e1"
 other = "Verificar"
 
-[login_title]
-hash = "sha1-5fa984fa2afc3712f99f20f5947ada0de5d3044f"
-other = "Entrar no RomM"
-
 [login_username]
 hash = "sha1-84c29015de33e5d22422382a372caba5c58f8c01"
 other = "Nome de usuário"
@@ -758,10 +746,6 @@ other = "Canal de lançamento"
 [settings_save_sync]
 hash = "sha1-3caa02c76bc2b97f136e706433de562fd060f48d"
 other = "Sincronização de Saves"
-
-[settings_save_sync_settings]
-hash = "sha1-d3cc05947f3967eb75f60603d7fe6d6d88dbcf7f"
-other = "Mapeamentos de Sincronização"
 
 [settings_show_collections]
 hash = "sha1-4bbb632f02fd69807705c0179999c17d35c93b0f"
@@ -1019,3 +1003,114 @@ other = "Tamanho: {{.Size}}"
 [update_up_to_date]
 hash = "sha1-a534c74416c491ff56e75a3335ea2ee9b4e5b4ad"
 other = "Você tem a versão mais recente ({{.Version}})"
+
+[button_sync]
+other = "Sync"
+
+[collections_syncing]
+other = "Syncing collections..."
+
+[filter_platform]
+other = "Platform"
+
+[info_cfw]
+other = "CFW"
+
+[info_romm_version]
+other = "Version"
+
+[info_token_expires]
+other = "Expires"
+
+[info_token_name]
+other = "Token"
+
+[info_token_never_expires]
+other = "Never"
+
+[info_unknown]
+other = "Unknown"
+
+[login_auth_credentials]
+other = "Credentials"
+
+[login_auth_method]
+other = "Auth Method"
+
+[login_auth_pairing_code]
+other = "Pairing Code"
+
+[login_auth_title]
+other = "Authentication"
+
+[login_error_invalid_code]
+other = "Invalid or expired pairing code.\nPlease try again."
+
+[login_pairing_code]
+other = "Pairing Code"
+
+[login_server_title]
+other = "Server"
+
+[login_validating_connection]
+other = "Validating connection..."
+
+[save_mapping_no_platforms]
+other = "No platforms with multiple emulators found."
+
+[save_mapping_title]
+other = "Save Sync Mappings"
+
+[server_address_validating]
+other = "Validating new server address..."
+
+[settings_download_art_kind_marquee]
+other = "Marquee"
+
+[settings_download_art_kind_none]
+other = "None"
+
+[settings_download_art_kind_title]
+other = "Title"
+
+[settings_download_art_preview]
+other = "Download Screenshot Preview"
+
+[settings_download_art_splash]
+other = "Download Splash Art"
+
+[settings_server_address]
+other = "Server Address"
+
+[settings_swap_face_buttons]
+other = "Swap Face Buttons"
+
+[settings_switch_to_token]
+other = "Switch to API Token"
+
+[settings_sync_local_artwork]
+other = "Download Missing Art"
+
+[settings_token_switch_success]
+other = "Successfully switched to API Token!"
+
+[settings_tools]
+other = "Tools"
+
+[startup_error_credentials_invalid]
+other = "Your credentials are invalid.\nPlease log in again."
+
+[startup_error_token_invalid]
+other = "Your API token is invalid or expired.\nPlease set up a new one."
+
+[sync_history_col_game]
+other = "Game"
+
+[sync_history_col_platform]
+other = "Platform"
+
+[sync_history_col_time]
+other = "Time"
+
+[sync_menu_save_mapping]
+other = "Save Mapping"

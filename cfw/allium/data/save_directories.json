@@ -1,92 +1,41 @@
 {
-  "3do": [
-    "Opera"
-  ],
   "acpc": [
-    "CPC/GX4000 (Caprice)",
     "CPC (CrocoDS)"
   ],
   "amiga": [
-    "PUAE 2021",
-    "Amiberry (External)",
-    "PUAE",
-    "PUAE Xtreme",
-    "UAE4ARM"
+    "PUAE 2021"
   ],
   "arcade": [
-    "FinalBurn Neo Amped",
+    "MAME 2003-Plus",
     "FB Alpha 2012 CPS-1",
     "FB Alpha 2012 CPS-2",
     "FB Alpha 2012 CPS-3",
     "FB Alpha 2012 Neo Geo",
-    "FB Alpha 2012",
-    "FinalBurn Neo",
-    "MAME 2000",
-    "MAME 2003",
-    "MAME 2003-Midway",
-    "MAME 2003-Plus",
-    "MAME 2003-Xtreme",
-    "MAME 078 Plus",
-    "MAME 139",
-    "MAME 2010",
-    "MAME"
+    "FinalBurn Neo"
   ],
   "arduboy": [
-    "Ardens",
-    "Arduous"
+    "Ardens"
   ],
   "atari-st": [
-    "Hatari",
-    "HatariB"
+    "Hatari"
   ],
   "atari2600": [
-    "Stella",
     "Stella 2014"
   ],
   "atari5200": [
-    "a5200",
-    "Atari 800"
+    "a5200"
   ],
   "atari7800": [
     "ProSystem"
   ],
-  "c128": [
-    "VICE x128"
-  ],
   "c64": [
-    "VICE x64, fast",
-    "VICE x64sc, accurate",
-    "VICE xscpu64"
-  ],
-  "cave-story": [
-    "NXEngine"
-  ],
-  "cbm-ii": [
-    "VICE xcbm2",
-    "VICE xcmb5x0"
-  ],
-  "chailove": [
-    "ChaiLove"
-  ],
-  "chip-8": [
-    "JAXE"
+    "VICE x64, fast"
   ],
   "colecovision": [
-    "Gearcoleco",
     "blueMSX"
   ],
-  "cpet": [
-    "VICE xpet"
-  ],
   "dc": [
-    "Flycast VL",
-    "Flycast (External)",
-    "Flycast",
-    "Flycast Xtreme",
-    "Morpheuscast"
-  ],
-  "doom": [
-    "PrBoom"
+    "Flycast"
   ],
   "dos": [
     "DOSBox-Pure"
@@ -95,323 +44,133 @@
     "FreeChaF"
   ],
   "famicom": [
-    "FCEUmm",
-    "BNES",
-    "Mesen",
-    "Nestopia",
-    "QuickNES"
+    "FCEUmm"
   ],
   "fds": [
-    "FCEUmm",
-    "Mesen",
-    "Nestopia"
+    "FCEUmm"
   ],
   "g-and-w": [
     "Handheld Electronic"
   ],
-  "galaksija": [
-    "Galaksija"
-  ],
   "gamegear": [
-    "PicoDrive",
-    "Gearsystem",
-    "Genesis Plus GX"
+    "PicoDrive"
   ],
   "gb": [
-    "Gambatte",
-    "DoubleCherryGB",
-    "FixGB",
-    "Gearboy",
-    "mGBA",
-    "SameBoy",
-    "TGB Dual",
-    "VBA-M"
+    "Gambatte"
   ],
   "gba": [
     "gpSP",
-    "mGBA Rumble",
-    "mGBA",
-    "Beetle GBA",
-    "VBA-M",
-    "VBA-Next"
+    "mGBA"
   ],
   "gbc": [
-    "Gambatte",
-    "DoubleCherryGB",
-    "FixGB",
-    "Gearboy",
-    "mGBA",
-    "SameBoy",
-    "TGB Dual",
-    "VBA-M"
+    "Gambatte"
   ],
   "genesis": [
-    "Genesis Plus GX",
-    "Genesis Plus GX Wide",
     "PicoDrive"
   ],
   "intellivision": [
     "FreeIntv"
   ],
-  "j2me": [
-    "FreeJ2ME"
-  ],
-  "jaguar": [
-    "Virtual Jaguar"
-  ],
-  "karaoke": [
-    "PocketCDG"
-  ],
-  "lowres": [
-    "Lowres NX"
-  ],
-  "lua": [
-    "Lutro"
-  ],
   "lynx": [
-    "Handy",
-    "Beetle Lynx"
-  ],
-  "media-player": [
-    "FFPlay",
-    "MPV",
-    "Live TV"
+    "Handy"
   ],
   "mega-duck-slash-cougar-boy": [
     "SameDuck"
   ],
   "msx": [
-    "blueMSX",
-    "fMSX"
+    "blueMSX"
   ],
   "n64": [
-    "Mupen64Plus-Next",
-    "Mupen64Plus (External - GLideN64)",
-    "Mupen64Plus (External - Rice)",
-    "Mupen64Plus",
-    "ParaLLel N64"
-  ],
-  "naomi": [
-    "Flycast VL",
-    "Flycast (External)",
-    "Flycast",
-    "Flycast Xtreme",
-    "Morpheuscast"
+    "Mupen64Plus-Next"
   ],
   "nds": [
-    "DraStic (External)",
-    "DeSmuME 2015",
-    "DraStic-Legacy (External)",
-    "melonDS",
-    "melonDS-DS"
+    "DraStic"
   ],
   "neo-geo-cd": [
     "NeoCD"
   ],
   "neo-geo-pocket": [
-    "Beetle NeoPop",
-    "RACE"
+    "Beetle NeoPop"
   ],
   "neo-geo-pocket-color": [
-    "Beetle NeoPop",
-    "RACE"
+    "Beetle NeoPop"
   ],
   "neogeoaes": [
-    "FinalBurn Neo",
-    "FB Alpha 2012 Neo Geo",
-    "Geolith"
+    "FB Alpha 2012 Neo Geo"
   ],
   "neogeomvs": [
-    "FinalBurn Neo",
-    "FB Alpha 2012 Neo Geo",
-    "Geolith"
+    "FB Alpha 2012 Neo Geo"
   ],
   "nes": [
-    "FCEUmm",
-    "BNES",
-    "Mesen",
-    "Nestopia",
-    "QuickNES"
+    "FCEUmm"
   ],
   "odyssey": [
     "Odyssey2"
   ],
-  "onscripter": [
-    "Onscripter",
-    "Onscripter-Yuri"
-  ],
-  "openbor": [
-    "OpenBOR7530 (External)",
-    "OpenBOR4432 (External)",
-    "OpenBOR6412 (External)",
-    "OpenBOR7142 (External)"
-  ],
-  "pc-8000": [
-    "QUASI8800"
-  ],
-  "pc-9800-series": [
-    "Neko Project II Kai",
-    "Neko Project II"
-  ],
-  "pc-fx": [
-    "Beetle PC-FX"
-  ],
-  "philips-cd-i": [
-    "SAME CDi"
-  ],
-  "pico": [
-    "PicoDrive",
-    "Genesis Plus GX",
-    "Genesis Plus GX Wide"
-  ],
   "pico-8": [
-    "FAKE-08",
-    "PICO-8 (External)",
-    "PICO-8 (External Pixel-Perfect)",
-    "Retro8"
+    "FAKE-08"
   ],
   "pokemon-mini": [
     "PokeMini"
   ],
-  "ports": [
-    "External"
-  ],
-  "psp": [
-    "PPSSPP (External)",
-    "PPSSPP"
-  ],
   "psx": [
-    "PCSX ReARMed",
-    "Beetle PSX",
-    "DuckStation",
-    "SwanStation"
-  ],
-  "quake": [
-    "TyrQuake"
-  ],
-  "rpg-maker": [
-    "EasyRPG"
+    "PCSX ReARMed"
   ],
   "saturn": [
-    "YabaSanshiro (External)",
-    "Beetle Saturn",
-    "YabaSanshiro",
-    "YabaSanshiro (External - No BIOS)",
-    "Yabause"
-  ],
-  "scummvm": [
-    "ScummVM (External)",
-    "ScummVM"
+    "Beetle Saturn"
   ],
   "sega32": [
     "PicoDrive"
   ],
   "segacd": [
-    "Genesis Plus GX",
-    "Genesis Plus GX Wide",
     "PicoDrive"
   ],
   "sfam": [
-    "Snes9x",
     "Beetle Supafaust",
-    "BSNES",
-    "BSNES 2014 Performance",
-    "BSNES C++98",
-    "BSNES Mercury",
-    "ChimeraSNES",
-    "Mesen-S",
-    "Snes9x 2002",
-    "Snes9x 2005",
-    "Snes9x 2005 Plus",
-    "Snes9x 2010",
-    "Snes9x Next"
+    "Snes9x"
   ],
   "sg1000": [
-    "Genesis Plus GX",
-    "blueMSX",
     "Gearsystem"
   ],
   "sharp-x68000": [
     "PX68k"
   ],
   "sms": [
-    "SMS Plus GX",
-    "Gearsystem",
-    "Genesis Plus GX",
     "PicoDrive"
   ],
   "snes": [
-    "Snes9x",
     "Beetle Supafaust",
-    "BSNES",
-    "BSNES 2014 Performance",
-    "BSNES C++98",
-    "BSNES Mercury",
-    "ChimeraSNES",
-    "Mesen-S",
-    "Snes9x 2002",
-    "Snes9x 2005",
-    "Snes9x 2005 Plus",
-    "Snes9x 2010",
-    "Snes9x Next"
+    "Snes9x"
   ],
   "supergrafx": [
-    "Beetle SuperGrafx",
-    "Geargrafx",
-    "Beetle PCE"
+    "Beetle SuperGrafx"
   ],
   "supervision": [
     "Potator"
   ],
   "tg16": [
-    "Beetle PCE Fast",
-    "Beetle PCE"
-  ],
-  "ti-83": [
-    "Numero"
+    "Beetle PCE Fast"
   ],
   "tic-80": [
     "TIC-80"
   ],
   "turbografx-cd": [
-    "Beetle PCE Fast",
-    "Beetle PCE"
-  ],
-  "uzebox": [
-    "Uzem"
+    "Beetle PCE Fast"
   ],
   "vectrex": [
     "vecx"
   ],
-  "vemulator": [
-    "VeMUlator"
-  ],
   "vic-20": [
     "VICE xvic"
   ],
-  "vircon-32": [
-    "Vircon32"
-  ],
   "virtualboy": [
     "Beetle VB"
-  ],
-  "wasm-4": [
-    "WASM-4"
-  ],
-  "wolfenstein-3d": [
-    "ECWolf"
   ],
   "wonderswan": [
     "Beetle Cygne"
   ],
   "wonderswan-color": [
     "Beetle Cygne"
-  ],
-  "x1": [
-    "X Millennium"
-  ],
-  "zx81": [
-    "EightyOne"
   ],
   "zxs": [
     "Fuse"

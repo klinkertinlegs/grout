@@ -1,9 +1,7 @@
 package cache
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
 	"grout/romm"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
@@ -74,8 +72,8 @@ func (cm *Manager) SavePlatforms(platforms []romm.Platform) error {
 
 	stmt, err := tx.Prepare(`
 		INSERT OR REPLACE INTO platforms
-		(id, slug, fs_slug, name, api_name, custom_name, rom_count, has_bios, data_json, updated_at, cached_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		(id, slug, fs_slug, name, api_name, custom_name, rom_count, data_json, updated_at, cached_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`)
 	if err != nil {
 		return newCacheError("save", "platforms", "", err)
@@ -89,11 +87,6 @@ func (cm *Manager) SavePlatforms(platforms []romm.Platform) error {
 			return newCacheError("save", "platforms", p.Slug, err)
 		}
 
-		hasBIOS := 0
-		if p.HasBIOS {
-			hasBIOS = 1
-		}
-
 		_, err = stmt.Exec(
 			p.ID,
 			p.Slug,
@@ -102,7 +95,6 @@ func (cm *Manager) SavePlatforms(platforms []romm.Platform) error {
 			p.ApiName,
 			p.CustomName,
 			p.ROMCount,
-			hasBIOS,
 			string(dataJSON),
 			p.UpdatedAt,
 			now,
@@ -120,57 +112,9 @@ func (cm *Manager) SavePlatforms(platforms []romm.Platform) error {
 	return nil
 }
 
-func (cm *Manager) HasBIOS(platformID int) (bool, bool) {
-	if cm == nil || !cm.initialized {
-		return false, false
-	}
-
-	cm.mu.RLock()
-	defer cm.mu.RUnlock()
-
-	var hasBIOS int
-	err := cm.db.QueryRow(`
-		SELECT has_bios FROM bios_availability WHERE platform_id = ?
-	`, platformID).Scan(&hasBIOS)
-
-	if errors.Is(err, sql.ErrNoRows) {
-		return false, false
-	}
-	if err != nil {
-		return false, false
-	}
-
-	return hasBIOS == 1, true
-}
-
-func (cm *Manager) SetBIOSAvailability(platformID int, hasBIOS bool) error {
-	if cm == nil || !cm.initialized {
-		return ErrNotInitialized
-	}
-
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-
-	biosInt := 0
-	if hasBIOS {
-		biosInt = 1
-	}
-
-	_, err := cm.db.Exec(`
-		INSERT OR REPLACE INTO bios_availability (platform_id, has_bios, checked_at)
-		VALUES (?, ?, ?)
-	`, platformID, biosInt, nowUTC())
-
-	if err != nil {
-		return newCacheError("save", "bios", "", err)
-	}
-
-	return nil
-}
-
 // PurgeDeletedPlatforms removes cached platforms whose IDs are not in the provided
-// list of valid IDs from the server. Also cleans up bios_availability and
-// platform_sync_status for the deleted platforms.
+// list of valid IDs from the server. Also cleans up platform_sync_status for the
+// deleted platforms.
 func (cm *Manager) PurgeDeletedPlatforms(validIDs []int) (int64, error) {
 	if cm == nil || !cm.initialized {
 		return 0, ErrNotInitialized
@@ -215,10 +159,6 @@ func (cm *Manager) PurgeDeletedPlatforms(validIDs []int) (int64, error) {
 		if _, err := tx.Exec(query, args...); err != nil {
 			return 0, newCacheError("purge", "platforms", "", err)
 		}
-	}
-
-	if _, err := tx.Exec("DELETE FROM bios_availability WHERE platform_id NOT IN (SELECT id FROM _valid_platform_ids)"); err != nil {
-		return 0, newCacheError("purge", "platforms", "bios_availability", err)
 	}
 
 	if _, err := tx.Exec("DELETE FROM platform_sync_status WHERE platform_id NOT IN (SELECT id FROM _valid_platform_ids)"); err != nil {

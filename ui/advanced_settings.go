@@ -88,6 +88,7 @@ func (s *AdvancedSettingsScreen) Draw(input AdvancedSettingsInput) (AdvancedSett
 			output.Action = AdvancedSettingsActionServerAddress
 			return output, nil
 		}
+
 	}
 
 	s.applySettings(config, result.Items)
@@ -103,7 +104,7 @@ func (s *AdvancedSettingsScreen) Draw(input AdvancedSettingsInput) (AdvancedSett
 }
 
 func (s *AdvancedSettingsScreen) buildMenuItems(config *internal.Config) []gaba.ItemWithOptions {
-	return []gaba.ItemWithOptions{
+	items := []gaba.ItemWithOptions{
 		{
 			Item:    gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_sync_artwork", Other: "Preload Artwork"}, nil)},
 			Options: []gaba.Option{{Type: gaba.OptionTypeClickable}},
@@ -124,7 +125,7 @@ func (s *AdvancedSettingsScreen) buildMenuItems(config *internal.Config) []gaba.
 				{DisplayName: i18n.Localize(&goi18n.Message{ID: "time_105_minutes", Other: "105 Minutes"}, nil), Value: 105 * time.Minute},
 				{DisplayName: i18n.Localize(&goi18n.Message{ID: "time_120_minutes", Other: "120 Minutes"}, nil), Value: 120 * time.Minute},
 			},
-			SelectedOption: s.findDownloadTimeoutIndex(config.DownloadTimeout),
+			SelectedOption: s.findDownloadTimeoutIndex(config.DownloadTimeout.Duration()),
 		},
 		{
 			Item: gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_api_timeout", Other: "API Timeout"}, nil)},
@@ -140,15 +141,7 @@ func (s *AdvancedSettingsScreen) buildMenuItems(config *internal.Config) []gaba.
 				{DisplayName: i18n.Localize(&goi18n.Message{ID: "time_240_seconds", Other: "240 Seconds"}, nil), Value: 240 * time.Second},
 				{DisplayName: i18n.Localize(&goi18n.Message{ID: "time_300_seconds", Other: "300 Seconds"}, nil), Value: 300 * time.Second},
 			},
-			SelectedOption: s.findApiTimeoutIndex(config.ApiTimeout),
-		},
-		{
-			Item: gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_kid_mode", Other: "Kid Mode"}, nil)},
-			Options: []gaba.Option{
-				{DisplayName: i18n.Localize(&goi18n.Message{ID: "option_disabled", Other: "Disabled"}, nil), Value: false},
-				{DisplayName: i18n.Localize(&goi18n.Message{ID: "option_enabled", Other: "Enabled"}, nil), Value: true},
-			},
-			SelectedOption: boolToIndex(config.KidMode),
+			SelectedOption: s.findApiTimeoutIndex(config.ApiTimeout.Duration()),
 		},
 		{
 			Item:    gaba.MenuItem{Text: i18n.Localize(&goi18n.Message{ID: "settings_server_address", Other: "Server Address"}, nil)},
@@ -173,6 +166,8 @@ func (s *AdvancedSettingsScreen) buildMenuItems(config *internal.Config) []gaba.
 			SelectedOption: logLevelToIndex(config.LogLevel),
 		},
 	}
+
+	return items
 }
 
 func (s *AdvancedSettingsScreen) applySettings(config *internal.Config, items []gaba.ItemWithOptions) {
@@ -182,12 +177,12 @@ func (s *AdvancedSettingsScreen) applySettings(config *internal.Config, items []
 		switch selectedText {
 		case i18n.Localize(&goi18n.Message{ID: "settings_download_timeout", Other: "Download Timeout"}, nil):
 			if val, ok := item.Options[item.SelectedOption].Value.(time.Duration); ok {
-				config.DownloadTimeout = val
+				config.DownloadTimeout = internal.DurationSeconds(val)
 			}
 
 		case i18n.Localize(&goi18n.Message{ID: "settings_api_timeout", Other: "API Timeout"}, nil):
 			if val, ok := item.Options[item.SelectedOption].Value.(time.Duration); ok {
-				config.ApiTimeout = val
+				config.ApiTimeout = internal.DurationSeconds(val)
 			}
 
 		case i18n.Localize(&goi18n.Message{ID: "settings_log_level", Other: "Log Level"}, nil):
@@ -200,11 +195,6 @@ func (s *AdvancedSettingsScreen) applySettings(config *internal.Config, items []
 				config.ReleaseChannel = val
 			}
 
-		case i18n.Localize(&goi18n.Message{ID: "settings_kid_mode", Other: "Kid Mode"}, nil):
-			if val, ok := item.Options[item.SelectedOption].Value.(bool); ok {
-				config.KidMode = val
-				internal.SetKidMode(val)
-			}
 		}
 	}
 }

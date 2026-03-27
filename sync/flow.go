@@ -534,9 +534,11 @@ func download(client *romm.Client, config *internal.Config, deviceID string, ite
 			backupPath := filepath.Join(backupDir, fmt.Sprintf("%s [%s]%s", base, timestamp, ext))
 
 			if err := os.MkdirAll(backupDir, 0755); err != nil {
-				logger.Warn("Failed to create backup directory", "path", backupDir, "error", err)
+				logger.Error("Failed to create backup directory, aborting download", "path", backupDir, "error", err)
+				return false
 			} else if err := fileutil.CopyFile(item.LocalSave.FilePath, backupPath); err != nil {
-				logger.Warn("Failed to backup save before download", "path", item.LocalSave.FilePath, "error", err)
+				logger.Error("Failed to backup save before download, aborting download", "path", item.LocalSave.FilePath, "error", err)
+				return false
 			} else {
 				logger.Debug("Backed up save before download", "backup", backupPath)
 				if config != nil && config.SaveBackupLimit > 0 {

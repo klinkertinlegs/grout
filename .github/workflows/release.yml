@@ -21,7 +21,7 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  prepare:
     runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
@@ -47,13 +47,6 @@ jobs:
                --arg changelog "${{ inputs.changelog }}" \
                '.version = $version | .changelog[$version] = $changelog' \
                pak.json > pak.json.tmp && mv pak.json.tmp pak.json
-
-            # Update build pak.json (will be copied during build)
-            mkdir -p build64/Grout.pak
-            jq --arg version "${{ steps.version.outputs.value }}" \
-               --arg changelog "${{ inputs.changelog }}" \
-               '.version = $version | .changelog[$version] = $changelog' \
-               pak.json > build64/Grout.pak/pak.json
           else
             echo "Version is already ${{ steps.version.outputs.value }}, skipping pak.json update"
           fi
@@ -71,6 +64,16 @@ jobs:
             git commit -m "Update pak.json to ${{ steps.version.outputs.value }}"
             git push
           fi
+    outputs:
+      version: ${{ steps.version.outputs.value }}
+
+  build-arm64:
+    needs: prepare
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -81,51 +84,180 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and Package
-        run: task build extract package-next package-muos package-knulli package-spruce package-rocknix package-trimui package-batocera
+      - name: Build ARM64
+        run: task build extract
 
-      - name: Create NextUI distribution
-        run: |
-          cd build64/Grout.pak
-          zip -r ../Grout.pak.zip .
+      - name: Package ARM64 platforms
+        run: task package-next package-muos package-knulli package-spruce package-rocknix package-trimui package-minui package-batocera
 
-      - name: Create muOS distribution
-        run: |
-          cd build64/muOS
-          zip -r Grout.muxapp Grout
-          mv Grout.muxapp ../Grout.muxapp
+      - name: Rename binary
+        run: cp build64/grout build64/grout-arm64
 
-      - name: Create Knulli distribution
+      - name: Create distributions
         run: |
-          cd build64/Knulli
-          zip -r ../Grout-Knulli.zip Grout
+          cd dist/Grout.pak && zip -r ../Grout.pak.zip . && cd ../..
+          cd dist/muOS && zip -r Grout.muxapp Grout && mv Grout.muxapp ../Grout.muxapp && cd ../..
+          cd dist/Knulli && zip -r ../Grout-Knulli.zip Grout && cd ../..
+          cd dist/Spruce && zip -r Grout.spruce.zip Grout && mv Grout.spruce.zip ../Grout.spruce.zip && cd ../..
+          cd dist/ROCKNIX && zip -r ../Grout-ROCKNIX.zip Grout.sh Grout && cd ../..
+          cd dist/Trimui && zip -r ../Grout-Trimui.zip Grout && cd ../..
+          cd dist/MinUI-arm64 && zip -r ../Grout-MinUI-arm64.zip Grout && cd ../..
+          cd dist/Batocera-arm64 && zip -r ../Grout-Batocera-arm64.zip Grout.sh Grout && cd ../..
 
-      - name: Create spruce distribution
-        run: |
-          cd build64/Spruce
-          zip -r Grout.spruce.zip Grout
-          mv Grout.spruce.zip ../Grout.spruce.zip
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm64-artifacts
+          path: |
+            dist/Grout.pak.zip
+            dist/Grout.muxapp
+            dist/Grout.spruce.zip
+            dist/Grout-Knulli.zip
+            dist/Grout-ROCKNIX.zip
+            dist/Grout-Trimui.zip
+            dist/Grout-MinUI-arm64.zip
+            dist/Grout-Batocera-arm64.zip
+            build64/grout
+            build64/grout-arm64
 
-      - name: Create ROCKNIX distribution
-        run: |
-          cd build64/ROCKNIX
-          zip -r ../Grout-ROCKNIX.zip Grout.sh Grout
+  build-amd64:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
-      - name: Create Trimui distribution
-        run: |
-          cd build64/Trimui
-          zip -r ../Grout-Trimui.zip Grout
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Batocera distribution
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build AMD64
+        run: task build-amd64 extract-amd64
+
+      - name: Package Batocera AMD64
+        run: task package-batocera-amd64
+
+      - name: Rename binary
+        run: cp build/grout build/grout-amd64
+
+      - name: Create distribution
         run: |
-          cd build64/Batocera
-          zip -r ../Grout-Batocera.zip Grout.sh Grout
+          cd dist/Batocera-amd64 && zip -r ../Grout-Batocera-amd64.zip Grout.sh Grout
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: amd64-artifacts
+          path: |
+            dist/Grout-Batocera-amd64.zip
+            build/grout-amd64
+
+  build-x86:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build x86
+        run: task build-x86 extract-x86
+
+      - name: Package Batocera x86
+        run: task package-batocera-x86
+
+      - name: Rename binary
+        run: cp buildx86/grout buildx86/grout-x86
+
+      - name: Create distribution
+        run: |
+          cd dist/Batocera-x86 && zip -r ../Grout-Batocera-x86.zip Grout.sh Grout
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: x86-artifacts
+          path: |
+            dist/Grout-Batocera-x86.zip
+            buildx86/grout-x86
+
+  build-arm32:
+    needs: prepare
+    runs-on: ubuntu-22.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ARM32
+        run: task build-32 extract-32
+
+      - name: Package ARM32 platforms
+        run: task package-allium package-onion package-minui-arm32
+
+      - name: Rename binary
+        run: cp build32/grout build32/grout-arm32
+
+      - name: Create distributions
+        run: |
+          cd dist/Allium && zip -r ../Grout-Allium.zip Grout.pak && cd ../..
+          cd dist/Onion && zip -r ../Grout-Onion.zip Grout && cd ../..
+          cd dist/MinUI-arm32 && zip -r ../Grout-MinUI-arm32.zip Grout && cd ../..
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm32-artifacts
+          path: |
+            dist/Grout-Allium.zip
+            dist/Grout-Onion.zip
+            dist/Grout-MinUI-arm32.zip
+            build32/grout-arm32
+
+  release:
+    needs: [prepare, build-arm64, build-amd64, build-x86, build-arm32]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.value }}
-          name: ${{ steps.version.outputs.value }}
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: ${{ needs.prepare.outputs.version }}
           body: |
             ${{ inputs.beta && '⚠️ **This is a beta release.** It may contain bugs or incomplete features.' || '' }}
 
@@ -133,13 +265,162 @@ jobs:
 
             ${{ inputs.beta && format('Built from branch: `{0}`', github.ref_name) || '' }}
           files: |
-            build64/Grout.pak.zip
-            build64/Grout.muxapp
-            build64/Grout.spruce.zip
-            build64/Grout-Knulli.zip
-            build64/Grout-ROCKNIX.zip
-            build64/Grout-Trimui.zip
-            build64/Grout-Batocera.zip
+            dist/Grout.pak.zip
+            dist/Grout.muxapp
+            dist/Grout.spruce.zip
+            dist/Grout-Allium.zip
+            dist/Grout-Onion.zip
+            dist/Grout-Knulli.zip
+            dist/Grout-ROCKNIX.zip
+            dist/Grout-Trimui.zip
+            dist/Grout-MinUI-arm64.zip
+            dist/Grout-MinUI-arm32.zip
+            dist/Grout-Batocera-arm64.zip
+            dist/Grout-Batocera-x86.zip
+            dist/Grout-Batocera-amd64.zip
             build64/grout
+            build64/grout-arm64
+            build/grout-amd64
+            buildx86/grout-x86
+            build32/grout-arm32
           draft: false
           prerelease: ${{ inputs.beta }}
+
+  update-versions:
+    needs: [prepare, release]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Update versions.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          IS_BETA: ${{ inputs.beta }}
+          CHANGELOG: ${{ inputs.changelog }}
+        run: |
+          REPO="rommapp/grout"
+          DOWNLOAD_BASE="https://github.com/${REPO}/releases/download/${VERSION}"
+
+          # Hash local build artifacts and get their sizes
+          get_asset_info() {
+            local path="$1"
+            if [ -f "$path" ]; then
+              local size=$(stat --format=%s "$path")
+              local sha256=$(sha256sum "$path" | cut -d' ' -f1)
+              echo "${size} ${sha256}"
+            else
+              echo "0 "
+            fi
+          }
+
+          # Verify uploaded release assets match local build artifacts
+          verify_upload() {
+            local name="$1"
+            local expected_sha256="$2"
+            if [ -z "$expected_sha256" ]; then return; fi
+
+            local url="${DOWNLOAD_BASE}/${name}"
+            if curl -sfL -o "/tmp/${name}" "$url"; then
+              local actual_sha256=$(sha256sum "/tmp/${name}" | cut -d' ' -f1)
+              rm -f "/tmp/${name}"
+              if [ "$actual_sha256" != "$expected_sha256" ]; then
+                echo "::error::Upload verification failed for ${name}: expected ${expected_sha256}, got ${actual_sha256}"
+                exit 1
+              fi
+              echo "Verified ${name}: ${actual_sha256}"
+            else
+              echo "::warning::Could not download ${name} for verification"
+            fi
+          }
+
+          # Distribution zip assets
+          DIST_ASSETS=(
+            "Grout.pak.zip:dist/Grout.pak.zip"
+            "Grout.muxapp:dist/Grout.muxapp"
+            "Grout-Knulli.zip:dist/Grout-Knulli.zip"
+            "Grout.spruce.zip:dist/Grout.spruce.zip"
+            "Grout-ROCKNIX.zip:dist/Grout-ROCKNIX.zip"
+            "Grout-Trimui.zip:dist/Grout-Trimui.zip"
+            "Grout-Allium.zip:dist/Grout-Allium.zip"
+            "Grout-Onion.zip:dist/Grout-Onion.zip"
+            "Grout-MinUI-arm64.zip:dist/Grout-MinUI-arm64.zip"
+            "Grout-MinUI-arm32.zip:dist/Grout-MinUI-arm32.zip"
+            "Grout-Batocera-arm64.zip:dist/Grout-Batocera-arm64.zip"
+            "Grout-Batocera-amd64.zip:dist/Grout-Batocera-amd64.zip"
+            "Grout-Batocera-x86.zip:dist/Grout-Batocera-x86.zip"
+          )
+
+          # Build the assets JSON object
+          ASSETS_JSON="{}"
+          for entry in "${DIST_ASSETS[@]}"; do
+            name="${entry%%:*}"
+            path="${entry##*:}"
+
+            read size sha256 <<< $(get_asset_info "$path")
+            if [ "$size" = "0" ]; then
+              echo "::warning::Asset not found: ${path}"
+              continue
+            fi
+
+            verify_upload "$name" "$sha256"
+
+            ASSETS_JSON=$(echo "$ASSETS_JSON" | jq \
+              --arg name "$name" \
+              --arg url "${DOWNLOAD_BASE}/${name}" \
+              --argjson size "${size}" \
+              --arg sha256 "${sha256}" \
+              '.[$name] = { url: $url, size: $size, sha256: $sha256 }')
+          done
+
+          # Build the release entry
+          RELEASE_ENTRY=$(jq -n \
+            --arg version "$VERSION" \
+            --arg notes "$CHANGELOG" \
+            --argjson assets "$ASSETS_JSON" \
+            '{ version: $version, notes: $notes, assets: $assets }')
+
+          # Parse major.minor.patch for the romm key
+          ROMM_KEY=$(echo "$VERSION" | sed 's/^v//' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
+
+          # Initialize versions.json if it doesn't exist
+          if [ ! -f docs/versions.json ]; then
+            mkdir -p docs
+            echo '{"stable":null,"beta":null,"romm":{}}' > docs/versions.json
+          fi
+
+          # Update versions.json
+          if [ "$IS_BETA" = "true" ]; then
+            jq --argjson entry "$RELEASE_ENTRY" --arg key "$ROMM_KEY" \
+              '.beta = $entry | .romm[$key] = $entry' \
+              docs/versions.json > docs/versions.json.tmp
+          else
+            jq --argjson entry "$RELEASE_ENTRY" --arg key "$ROMM_KEY" \
+              '.stable = $entry | .romm[$key] = $entry' \
+              docs/versions.json > docs/versions.json.tmp
+          fi
+
+          mv docs/versions.json.tmp docs/versions.json
+
+      - name: Commit and push versions.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet docs/versions.json; then
+            echo "No changes to versions.json"
+          else
+            git add docs/versions.json
+            git commit -m "Update versions.json for ${{ needs.prepare.outputs.version }}"
+            git push
+          fi

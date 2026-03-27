@@ -6,6 +6,7 @@ import (
 	"grout/internal/imageutil"
 	"grout/romm"
 	"grout/version"
+	"time"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 	buttons "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool/constants"
@@ -91,11 +92,34 @@ func (s *InfoScreen) buildSections(input InfoInput) []gaba.Section {
 			Label: i18n.Localize(&goi18n.Message{ID: "info_user", Other: "User"}, nil),
 			Value: input.Host.Username,
 		},
-		{
-			Label: i18n.Localize(&goi18n.Message{ID: "info_romm_version", Other: "Version"}, nil),
-			Value: rommVersion,
-		},
 	}
+
+	if input.Host.HasTokenAuth() {
+		if input.Host.TokenName != "" {
+			metadata = append(metadata, gaba.MetadataItem{
+				Label: i18n.Localize(&goi18n.Message{ID: "info_token_name", Other: "Token"}, nil),
+				Value: input.Host.TokenName,
+			})
+		}
+
+		expiresValue := i18n.Localize(&goi18n.Message{ID: "info_token_never_expires", Other: "Never"}, nil)
+		if input.Host.TokenExpiresAt != "" {
+			if t, err := time.Parse(time.RFC3339, input.Host.TokenExpiresAt); err == nil {
+				expiresValue = t.Local().Format("2006-01-02 15:04")
+			} else {
+				expiresValue = input.Host.TokenExpiresAt
+			}
+		}
+		metadata = append(metadata, gaba.MetadataItem{
+			Label: i18n.Localize(&goi18n.Message{ID: "info_token_expires", Other: "Expires"}, nil),
+			Value: expiresValue,
+		})
+	}
+
+	metadata = append(metadata, gaba.MetadataItem{
+		Label: i18n.Localize(&goi18n.Message{ID: "info_romm_version", Other: "Version"}, nil),
+		Value: rommVersion,
+	})
 
 	sections = append(sections, gaba.NewInfoSection("RomM", metadata))
 

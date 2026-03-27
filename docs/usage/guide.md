@@ -10,18 +10,18 @@ This guide walks you through using Grout to download games from your RomM instan
 
 Grout attempts to be consistent with its controls. Here's a quick reference:
 
-| Button       | Description                               |
-|--------------|-------------------------------------------|
-| `A`          | Confirm / Select                          |
-| `B`          | Back / Cancel                             |
-| `X`          | Secondary action (Search, Settings)       |
+| Button       | Description                                        |
+|--------------|----------------------------------------------------|
+| `A`          | Confirm / Select                                   |
+| `B`          | Back / Cancel                                      |
+| `X`          | Secondary action (Search, Settings)                |
 | `Y`          | Tertiary action (Filters, Save Sync, Game Options) |
-| `Start`      | Confirm / Save settings                   |
-| `Select`     | Toggle list mode (multi-select, reorder)  |
-| `L1` / `R1`  | Shoulder buttons (used in button combos)  |
-| `Menu`       | Context action (BIOS, also used in button combos) |
-| `Up/Down`    | Navigate lists                            |
-| `Left/Right` | Cycle options / Jump pages in list        |
+| `Start`      | Confirm / Save settings                            |
+| `Select`     | Toggle list mode (multi-select, reorder)           |
+| `L1` / `R1`  | Shoulder buttons (used in button combos)           |
+| `Menu`       | Context action (BIOS, also used in button combos)  |
+| `Up/Down`    | Navigate lists                                     |
+| `Left/Right` | Cycle options / Jump pages in list                 |
 
 
 ## Status Bar Icons
@@ -32,23 +32,23 @@ The status bar displays icons to indicate background activity. Here's what each 
 
 These icons appear during the [background cache sync](#background-cache-sync) process:
 
-| Icon                                                                                              | Description |
-|---------------------------------------------------------------------------------------------------|---|
-| ![Database Sync](../resources/img/user_guide/statusbar_icons/Database%20Sync.png){ width="50" }   | Cache sync in progress |
+| Icon                                                                                              | Description                       |
+|---------------------------------------------------------------------------------------------------|-----------------------------------|
+| ![Database Sync](../resources/img/user_guide/statusbar_icons/Database%20Sync.png){ width="50" }   | Cache sync in progress            |
 | ![Database Check](../resources/img/user_guide/statusbar_icons/Database%20Check.png){ width="50" } | Cache sync completed successfully |
-| ![Database Alert](../resources/img/user_guide/statusbar_icons/Database%20Alert.png){ width="50" } | Cache sync encountered an error |
+| ![Database Alert](../resources/img/user_guide/statusbar_icons/Database%20Alert.png){ width="50" } | Cache sync encountered an error   |
 
 ### Save Sync Icons
 
 These icons appear during [Save Sync](save-sync.md) operations:
 
-| Icon | Description |
-|---|---|
-| ![Cloud Sync](../resources/img/user_guide/statusbar_icons/Cloud%20Sync.png){ width="50" } | Save sync in progress |
-| ![Cloud Upload](../resources/img/user_guide/statusbar_icons/Cloud%20Upload.png){ width="50" } | Uploading saves to RomM |
-| ![Cloud Download](../resources/img/user_guide/statusbar_icons/Cloud%20Download.png){ width="50" } | Downloading saves from RomM |
-| ![Cloud Check](../resources/img/user_guide/statusbar_icons/Cloud%20Check.png){ width="50" } | Save sync completed successfully |
-| ![Cloud Alert](../resources/img/user_guide/statusbar_icons/Cloud%20Alert.png){ width="50" } | Save sync encountered an error, check the log file |
+| Icon                                                                                              | Description                                        |
+|---------------------------------------------------------------------------------------------------|----------------------------------------------------|
+| ![Cloud Sync](../resources/img/user_guide/statusbar_icons/Cloud%20Sync.png){ width="50" }         | Save sync in progress                              |
+| ![Cloud Upload](../resources/img/user_guide/statusbar_icons/Cloud%20Upload.png){ width="50" }     | Uploading saves to RomM                            |
+| ![Cloud Download](../resources/img/user_guide/statusbar_icons/Cloud%20Download.png){ width="50" } | Downloading saves from RomM                        |
+| ![Cloud Check](../resources/img/user_guide/statusbar_icons/Cloud%20Check.png){ width="50" }       | Save sync completed successfully                   |
+| ![Cloud Alert](../resources/img/user_guide/statusbar_icons/Cloud%20Alert.png){ width="50" }       | Save sync encountered an error, check the log file |
 
 
 ## First Launch and Login
@@ -73,34 +73,72 @@ Use `Left/Right` to cycle through the available languages. Press `A` to confirm 
 You can change your language later from the [Settings](settings.md#language).
 
 
-### Login
+### Server Connection
 
-![Grout preview, login flow](../resources/img/user_guide/login.png "Grout preview, login flow")
+![Grout preview, server connection](../resources/img/user_guide/server_info.png "Grout preview, server connection")
 
-1. **Protocol** - Choose between HTTP and HTTPS.
+First, enter your server connection details:
+
+1. **Protocol** - Choose between HTTP and HTTPS using `Left/Right`.
 2. **Hostname** - Enter your RomM server address without the protocol.
-3. **Port (optional)** - If your RomM instance runs on a non-standard port, enter it here.
-4. **Username** - Your RomM username.
-5. **Password** - Your RomM password.
-6. **SSL Certificates** (HTTPS only) - Choose whether to verify SSL certificates:
+3. **Port** (optional) - If your RomM instance runs on a non-standard port, enter it here.
+4. **SSL Certificates** (HTTPS only) - Choose whether to verify SSL certificates:
     - **Verify** - Validate SSL certificates (recommended)
     - **Skip Verification** - Skip SSL certificate validation (useful for self-signed certificates or internal CAs)
 
-Use the left and right buttons to cycle through options for Protocol. For the text fields (Hostname, Username,
-Password), pressing `A` will open an on-screen keyboard.
+### Authentication
+
+After connecting to your server, choose an authentication method.
+
+!!! warning
+    The next Grout release will phase out password-based authentication. You will be required to use an API Token.
+
+#### Pairing Code
+
+![Grout preview, pairing code authentication](../resources/img/user_guide/auth_pairing.png "Grout preview, pairing code authentication")
+
+API tokens are the recommended way to authenticate with your RomM server. They are more secure than passwords, can be
+revoked individually, and work with all authentication setups including OIDC.
+
+1. Select **Pair with Token** as the authentication method
+2. Grout will display a pairing code on screen
+3. In your RomM web interface, go to **Settings > API Tokens** and enter the pairing code
+4. Once paired, Grout will automatically receive an API token
+
+The token is saved to your device and used for all future connections.
+
+!!! tip
+    You can view token details (name, expiry) on the [Grout Info](settings.md#main-settings) screen.
+
+**Required token permissions:**
+
+When creating a token for Grout, ensure it has the following scopes:
+
+| Scope               | Purpose                       |
+|---------------------|-------------------------------|
+| `me.read`           | Read your user profile        |
+| `me.write`          | Update user preferences       |
+| `roms.read`         | Browse and search ROMs        |
+| `roms.user.read`    | Read your saves and states    |
+| `roms.user.write`   | Upload and sync saves         |
+| `platforms.read`    | List platforms                |
+| `collections.read`  | Browse collections            |
+| `collections.write` | Manage collection preferences |
+| `assets.read`       | Download artwork and covers   |
+| `assets.write`      | Upload screenshots            |
+| `devices.read`      | Read device registrations     |
+| `devices.write`     | Register and update devices   |
+| `firmware.read`     | Download BIOS files           |
+
+#### Username and Password
+
+![Grout preview, credentials authentication](../resources/img/user_guide/auth_creds.png "Grout preview, credentials authentication")
+
+1. **Username** - Your RomM username.
+2. **Password** - Your RomM password.
 
 Press `Start` to login. If your credentials are correct and Grout can reach your server, you'll move
 to the next step. If something goes wrong, you'll get a message telling you what happened, and you can try again.
-
-!!! tip
-    If you're using a self-signed certificate or a certificate from an internal Certificate Authority, set
-    **SSL Certificates** to **Skip Verification** to avoid connection errors.
-
-!!! important
-    **OIDC Users:** If your RomM instance uses OIDC authentication, you can still use Grout by setting a password for your
-    user account. Grout will support API Keys once they are available in RomM. For more details,
-    see [this GitHub issue](https://github.com/rommapp/romm/issues/1767#issuecomment-2744215262).
-
 
 ## Platform Directory Mapping
 
@@ -131,7 +169,7 @@ pre-selected. If not, it'll suggest creating one with the correct name for your 
 When you select **Custom...**, an on-screen keyboard appears where you can type your desired folder name. If you return
 to this screen later, any custom folder names you entered will be remembered and shown in place of "Custom...".
 
-You can change these mappings later from [Settings](settings.md).
+You can change these mappings later from [Settings](settings.md#directory-mappings).
 
 ### Mappings Reference
 
@@ -143,6 +181,7 @@ different folder naming conventions. Use these references to see the exact folde
 - [NextUI](../platforms/nextui.md) - Descriptive names with tags (e.g., `Game Boy (GB)`)
 - [ROCKNIX](../platforms/rocknix.md) - ES-DE style folder names (e.g., `gb`, `snes`, `psx`)
 - [Spruce](../platforms/spruce.md) - Uppercase short codes (e.g., `GB`, `SFC`, `PS`)
+- [Batocera](../platforms/BATOCERA.md) - ES-DE style folder names (e.g., `gb`, `megadrive`, `psx`)
 
 
 ## Background Cache Sync
@@ -339,8 +378,8 @@ different revisions (Rev A, Rev B). When a game has multiple versions available:
   a sync automatically. See [Save Slots](save-sync.md#save-slots) for details.
 
 !!! important
-    **Kids Mode Impact:** When Kids Mode is enabled, the Game Options screen is hidden.
-    See [Settings Reference](settings.md#kids-mode) to learn how to temporarily or permanently disable Kids Mode.
+    **Kid Mode Impact:** When Kid Mode is enabled, the Game Options screen is hidden.
+    See [Settings Reference](settings.md#kid-mode) to learn how to temporarily or permanently disable Kid Mode.
 
 
 ## Downloading Games
@@ -377,8 +416,8 @@ Many emulators require BIOS files to function properly. Grout can download these
 the correct location on your device.
 
 !!! important
-    **Kids Mode Impact:** When Kids Mode is enabled, the BIOS download screen is hidden.
-    See [Settings Reference](settings.md#kids-mode) to learn how to temporarily or permanently disable Kids Mode.
+    **Kid Mode Impact:** When Kid Mode is enabled, the BIOS download screen is hidden.
+    See [Settings Reference](settings.md#kid-mode) to learn how to temporarily or permanently disable Kid Mode.
 
 ![Grout preview, BIOS download](../resources/img/user_guide/bios_download.png "Grout preview, BIOS download")
 
@@ -386,10 +425,3 @@ the correct location on your device.
 
 From the game list, press `Menu` on a platform that has BIOS files available in your RomM library. You'll see
 a "BIOS" option in the footer when BIOS files are available for that platform.
-
-
-## Spread Joy!
-
-A significant amount of time has been spent building Grout.
-
-If you enjoy using Grout and feel inclined to pay it forward, go do something nice for someone!

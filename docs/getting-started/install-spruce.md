@@ -1,6 +1,6 @@
 # Installation Guide for Spruce
 
-This guide will help you install Grout on devices running [Spruce](https://spruceui.github.io/) v4.
+This guide will help you install Grout on devices running [Spruce][spruce] v4.
 
 ## Tested Devices
 
@@ -43,3 +43,5 @@ file if you do not want to authenticate again, and configure platforms folder ma
 ## Next Steps
 
 After installation is complete, check out the [User Guide](../usage/guide.md) to learn how to use Grout.
+
+--8<-- "docs/_includes/cfw-links.md"

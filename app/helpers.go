@@ -59,7 +59,7 @@ func handlePlatformMappingUpdateUI(state *AppState, r ui.PlatformMappingOutput) 
 	state.Config.PlatformOrder = internal.PrunePlatformOrder(state.Config.PlatformOrder, r.Mappings)
 	internal.SaveConfig(state.Config)
 
-	platforms, err := internal.GetMappedPlatforms(state.Host, r.Mappings, state.Config.ApiTimeout)
+	platforms, err := internal.GetMappedPlatforms(state.Host, r.Mappings, state.Config.ApiTimeout.Duration())
 	if err != nil {
 		gaba.GetLogger().Error("Failed to refresh platforms after mapping update", "error", err)
 		return
@@ -120,7 +120,7 @@ func handleLogout(state *AppState) {
 		screen := ui.NewPlatformMappingScreen()
 		result, err := screen.Draw(ui.PlatformMappingInput{
 			Host:             state.Config.Hosts[0],
-			ApiTimeout:       state.Config.ApiTimeout,
+			ApiTimeout:       state.Config.ApiTimeout.Duration(),
 			CFW:              state.CFW,
 			RomDirectory:     cfw.GetRomDirectory(),
 			AutoSelect:       false,
@@ -135,10 +135,10 @@ func handleLogout(state *AppState) {
 	}
 
 	if err := cache.InitCacheManager(state.Config.Hosts[0], state.Config); err != nil {
-		logger.Error("Failed to initialize cache manager after re-login", "error", err)
+		logger.Error("Failed to re-initialize cache manager", "error", err)
 	}
 
-	platforms, err := internal.GetMappedPlatforms(state.Config.Hosts[0], state.Config.DirectoryMappings, state.Config.ApiTimeout)
+	platforms, err := internal.GetMappedPlatforms(state.Config.Hosts[0], state.Config.DirectoryMappings, state.Config.ApiTimeout.Duration())
 	if err != nil {
 		logger.Error("Failed to load platforms after re-login", "error", err)
 		return

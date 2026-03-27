@@ -37,7 +37,7 @@ func GetBIOSDirectory() string {
 }
 
 func GetBaseSavePath() string {
-	return filepath.Join(GetBasePath(), "Saves", "saves")
+	return filepath.Join(GetBasePath(), "Saves", "CurrentProfile", "saves")
 }
 
 func GetArtDirectory(romDir string) string {

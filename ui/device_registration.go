@@ -166,7 +166,7 @@ func (s *SaveSyncSettingsScreen) drawRegistered(input SaveSyncSettingsInput) (Sa
 		return output, nil
 	}
 
-	client := romm.NewClientFromHost(input.Host, input.Config.ApiTimeout)
+	client := romm.NewClientFromHost(input.Host, input.Config.ApiTimeout.Duration())
 
 	var updateErr error
 	gaba.ProcessMessage(
@@ -209,7 +209,7 @@ func (s *SaveSyncSettingsScreen) registerDevice(output SaveSyncSettingsOutput) (
 		return output, nil
 	}
 
-	client := romm.NewClientFromHost(output.Host, output.Config.ApiTimeout)
+	client := romm.NewClientFromHost(output.Host, output.Config.ApiTimeout.Duration())
 
 	var device romm.Device
 	var regErr error

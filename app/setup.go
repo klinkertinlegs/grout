@@ -6,6 +6,7 @@ import (
 	"grout/cfw"
 	"grout/cfw/allium"
 	"grout/cfw/muos"
+	"grout/cfw/onion"
 	"grout/internal"
 	"grout/internal/environment"
 	"grout/internal/fileutil"
@@ -46,6 +47,8 @@ func setup() SetupResult {
 					mappingBytes, mappingErr = muos.GetInputMappingBytes()
 				case cfw.Allium:
 					mappingBytes, mappingErr = allium.GetInputMappingBytes()
+				case cfw.Onion:
+					mappingBytes, mappingErr = onion.GetInputMappingBytes()
 				}
 				if mappingBytes != nil && mappingErr == nil {
 					gaba.SetInputMappingBytes(mappingBytes)
@@ -117,8 +120,8 @@ func setup() SetupResult {
 		if config == nil {
 			config = &internal.Config{
 				ShowRegularCollections: true,
-				ApiTimeout:             30 * time.Minute,
-				DownloadTimeout:        60 * time.Minute,
+				ApiTimeout:             internal.DurationSeconds(30 * time.Second),
+				DownloadTimeout:        internal.DurationSeconds(60 * time.Minute),
 			}
 		}
 		config.Language = selectedLanguage
@@ -130,6 +133,7 @@ func setup() SetupResult {
 		loginConfig, loginErr := ui.LoginFlow(romm.Host{})
 		if loginErr != nil {
 			logger.Error("Login flow failed", "error", loginErr)
+			gaba.Close()
 			log.SetOutput(os.Stderr)
 			log.Fatalf("Login failed: %v", loginErr)
 		}
@@ -176,7 +180,7 @@ func setup() SetupResult {
 		screen := ui.NewPlatformMappingScreen()
 		result, err := screen.Draw(ui.PlatformMappingInput{
 			Host:             config.Hosts[0],
-			ApiTimeout:       config.ApiTimeout,
+			ApiTimeout:       config.ApiTimeout.Duration(),
 			CFW:              currentCFW,
 			RomDirectory:     cfw.GetRomDirectory(),
 			AutoSelect:       false,
@@ -198,31 +202,110 @@ func setup() SetupResult {
 	}
 
 	var platforms []romm.Platform
-	var loadErr error
 
 	splashBytes, _ := resources.GetSplashImageBytes()
 
 	for {
+		var connErr error
+		var authErr error
+		var loadErr error
+
 		gaba.ProcessMessage("", gaba.ProcessMessageOptions{
 			ImageBytes:  splashBytes,
 			ImageWidth:  768,
 			ImageHeight: 540,
 		}, func() (interface{}, error) {
-			// Load platform bindings from RomM server (non-fatal if it fails)
-			if err := config.LoadPlatformsBinding(config.Hosts[0], config.ApiTimeout); err != nil {
+			host := config.Hosts[0]
+
+			// Step 1: Validate server connectivity
+			client := romm.NewClient(host.URL(), romm.WithInsecureSkipVerify(host.InsecureSkipVerify), romm.WithTimeout(internal.ValidationTimeout))
+			if err := client.ValidateConnection(); err != nil {
+				connErr = err
+				return nil, nil
+			}
+
+			// Step 2: Validate credentials/token
+			authClient := romm.NewClientFromHost(host, internal.LoginTimeout)
+			if host.HasTokenAuth() {
+				if err := authClient.ValidateToken(); err != nil {
+					authErr = err
+					return nil, nil
+				}
+				// Re-fetch username if missing
+				if host.Username == "" {
+					if user, err := authClient.GetCurrentUser(); err == nil {
+						host.Username = user.Username
+						config.Hosts[0] = host
+						internal.SaveConfig(config)
+					}
+				}
+			} else {
+				if err := authClient.Login(host.Username, host.Password); err != nil {
+					authErr = err
+					return nil, nil
+				}
+			}
+
+			// Step 3: Load platforms
+			if err := config.LoadPlatformsBinding(config.Hosts[0], config.ApiTimeout.Duration()); err != nil {
 				logger.Debug("Failed to load platform bindings", "error", err)
 			}
 
 			var err error
-			platforms, err = internal.GetMappedPlatforms(config.Hosts[0], config.DirectoryMappings, config.ApiTimeout)
+			platforms, err = internal.GetMappedPlatforms(config.Hosts[0], config.DirectoryMappings, config.ApiTimeout.Duration())
 			if err != nil {
 				loadErr = err
-				return nil, err
+				return nil, nil
 			}
-			loadErr = nil
 			platforms = internal.SortPlatformsByOrder(platforms, config.PlatformOrder)
 			return nil, nil
 		})
+
+		// Handle connectivity failure
+		if connErr != nil {
+			logger.Warn("Server connectivity failed", "error", connErr)
+			errorMessage := classifyStartupError(connErr)
+			errorMsg := i18n.Localize(errorMessage, nil)
+			retry := showStartupError(errorMsg)
+			if !retry {
+				gaba.Close()
+				os.Exit(1)
+			}
+			continue
+		}
+
+		// Handle auth failure — show message and offer re-login
+		if authErr != nil {
+			logger.Warn("Auth validation failed", "error", authErr)
+
+			var msg string
+			if config.Hosts[0].HasTokenAuth() {
+				msg = i18n.Localize(&goi18n.Message{ID: "startup_error_token_invalid", Other: "Your API token is invalid or expired.\nPlease set up a new one."}, nil)
+			} else {
+				msg = i18n.Localize(&goi18n.Message{ID: "startup_error_credentials_invalid", Other: "Your credentials are invalid.\nPlease log in again."}, nil)
+			}
+
+			gaba.ConfirmationMessage(msg, []gaba.FooterHelpItem{
+				{ButtonName: "A", HelpText: i18n.Localize(&goi18n.Message{ID: "button_continue", Other: "Continue"}, nil)},
+			}, gaba.MessageOptions{})
+
+			loginConfig, loginErr := ui.LoginFlow(config.Hosts[0])
+			if loginErr != nil {
+				logger.Error("Re-login failed", "error", loginErr)
+				gaba.Close()
+				log.SetOutput(os.Stderr)
+				log.Fatalf("Login failed: %v", loginErr)
+			}
+			config.Hosts = loginConfig.Hosts
+			config.PlatformsBinding = loginConfig.PlatformsBinding
+			internal.SaveConfig(config)
+
+			// Re-initialize cache manager with new credentials
+			if err := cache.InitCacheManager(config.Hosts[0], config); err != nil {
+				logger.Error("Failed to re-initialize cache manager", "error", err)
+			}
+			continue
+		}
 
 		if loadErr == nil {
 			break

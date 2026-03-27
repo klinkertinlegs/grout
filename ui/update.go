@@ -116,7 +116,7 @@ func (s *UpdateScreen) Draw(input UpdateInput) (UpdateOutput, error) {
 			Progress:            progress,
 		},
 		func() (interface{}, error) {
-			updateErr = update.PerformUpdate(updateInfo.DownloadURL, progress)
+			updateErr = update.PerformUpdate(input.CFW, updateInfo.DownloadURL, updateInfo.AssetSize, updateInfo.AssetSHA256, progress)
 			return nil, updateErr
 		},
 	)

@@ -37,7 +37,7 @@ func (s *GameOptionsScreen) Draw(input GameOptionsInput) (GameOptionsOutput, err
 	// Fetch save summary to determine available slots
 	var slotNames []string
 	if input.Host.DeviceID != "" {
-		client := romm.NewClientFromHost(input.Host, config.ApiTimeout)
+		client := romm.NewClientFromHost(input.Host, config.ApiTimeout.Duration())
 		gaba.ProcessMessage(
 			i18n.Localize(&goi18n.Message{ID: "synced_games_loading_detail", Other: "Loading save details..."}, nil),
 			gaba.ProcessMessageOptions{ShowThemeBackground: true},

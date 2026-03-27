@@ -13,10 +13,17 @@ type Host struct {
 
 	Username           string `json:"username,omitempty"`
 	Password           string `json:"password,omitempty"`
+	Token              string `json:"token,omitempty"`
+	TokenName          string `json:"token_name,omitempty"`
+	TokenExpiresAt     string `json:"token_expires_at,omitempty"`
 	InsecureSkipVerify bool   `json:"insecure_skip_verify,omitempty"`
 
 	DeviceID   string `json:"device_id,omitempty"`
 	DeviceName string `json:"device_name,omitempty"`
+}
+
+func (h Host) HasTokenAuth() bool {
+	return h.Token != ""
 }
 
 func (h Host) ToLoggable() map[string]any {
@@ -26,6 +33,7 @@ func (h Host) ToLoggable() map[string]any {
 		"port":                 h.Port,
 		"username":             h.Username,
 		"password":             strings.Repeat("*", len(h.Password)),
+		"token":                strings.Repeat("*", len(h.Token)),
 		"insecure_skip_verify": h.InsecureSkipVerify,
 	}
 
@@ -39,7 +47,10 @@ func (h Host) URL() string {
 	return h.RootURI
 }
 
-func (h Host) BasicAuthHeader() string {
+func (h Host) AuthHeader() string {
+	if h.Token != "" {
+		return "Bearer " + h.Token
+	}
 	auth := h.Username + ":" + h.Password
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
 }

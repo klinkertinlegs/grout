@@ -17,6 +17,43 @@ import (
 
 var kidModeEnabled atomic.Bool
 
+type AdditionalDownloads struct {
+	Marquee   artutil.ArtKind `json:"marquee,omitempty"`
+	Video     bool            `json:"video,omitempty"`
+	Thumbnail artutil.ArtKind `json:"thumbnail,omitempty"`
+	Bezel     bool            `json:"bezel,omitempty"`
+	Manual    bool            `json:"manual,omitempty"`
+	BoxBack   bool            `json:"box_back,omitempty"`
+	Fanart    bool            `json:"fanart,omitempty"`
+}
+
+// DurationSeconds is a time.Duration that marshals to/from JSON as whole seconds.
+// Existing configs with nanosecond values are handled by detecting large values on unmarshal.
+type DurationSeconds time.Duration
+
+func (d DurationSeconds) MarshalJSON() ([]byte, error) {
+	return json.Marshal(int64(time.Duration(d).Seconds()))
+}
+
+func (d *DurationSeconds) UnmarshalJSON(b []byte) error {
+	var raw int64
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	// Values over 1,000,000 are nanoseconds from old configs (e.g. 1800000000000 = 30min).
+	// Convert them to the equivalent duration directly.
+	if raw > 1_000_000 {
+		*d = DurationSeconds(time.Duration(raw))
+	} else {
+		*d = DurationSeconds(time.Duration(raw) * time.Second)
+	}
+	return nil
+}
+
+func (d DurationSeconds) Duration() time.Duration {
+	return time.Duration(d)
+}
+
 type Config struct {
 	Hosts                        []romm.Host                 `json:"hosts,omitempty"`
 	DirectoryMappings            map[string]DirectoryMapping `json:"directory_mappings,omitempty"`
@@ -27,8 +64,8 @@ type Config struct {
 	ShowSmartCollections         bool                        `json:"show_smart_collections"`
 	ShowVirtualCollections       bool                        `json:"show_virtual_collections"`
 	DownloadedGames              DownloadedGamesMode         `json:"downloaded_games,omitempty"`
-	ApiTimeout                   time.Duration               `json:"api_timeout"`
-	DownloadTimeout              time.Duration               `json:"download_timeout"`
+	ApiTimeout                   DurationSeconds             `json:"api_timeout"`
+	DownloadTimeout              DurationSeconds             `json:"download_timeout"`
 	LogLevel                     LogLevel                    `json:"log_level,omitempty"`
 	Language                     string                      `json:"language,omitempty"`
 	CollectionView               CollectionView              `json:"collection_view,omitempty"`
@@ -37,6 +74,7 @@ type Config struct {
 	ArtKind                      artutil.ArtKind             `json:"art_kind,omitempty"`
 	DownloadArtScreenshotPreview bool                        `json:"download_art_screenshot_preview,omitempty"`
 	DownloadSplashArt            artutil.ArtKind             `json:"download_splash_art,omitempty"`
+	AdditionalDownloads          AdditionalDownloads         `json:"additional_downloads,omitempty"`
 
 	SwapFaceButtons       bool              `json:"swap_face_buttons,omitempty"`
 	PlatformOrder         []string          `json:"platform_order,omitempty"`
@@ -87,11 +125,16 @@ func LoadConfig() (*Config, error) {
 	}
 
 	if config.ApiTimeout == 0 {
-		config.ApiTimeout = 30 * time.Minute
+		config.ApiTimeout = DurationSeconds(30 * time.Second)
 	}
 
 	if config.DownloadTimeout == 0 {
-		config.DownloadTimeout = 60 * time.Minute
+		config.DownloadTimeout = DurationSeconds(60 * time.Minute)
+	}
+
+	// Clamp API timeout to valid picker range (15s–300s)
+	if config.ApiTimeout.Duration() > 300*time.Second {
+		config.ApiTimeout = DurationSeconds(30 * time.Second)
 	}
 
 	if config.Language == "" {
@@ -108,6 +151,14 @@ func LoadConfig() (*Config, error) {
 
 	if config.ArtKind == "" {
 		config.ArtKind = artutil.ArtKindDefault
+	}
+
+	if config.AdditionalDownloads.Thumbnail == "" {
+		config.AdditionalDownloads.Thumbnail = artutil.ArtKindNone
+	}
+
+	if config.AdditionalDownloads.Marquee == "" {
+		config.AdditionalDownloads.Marquee = artutil.ArtKindNone
 	}
 
 	// Load slot preferences from dedicated file
@@ -139,6 +190,14 @@ func SaveConfig(config *Config) error {
 
 	if config.ArtKind == "" {
 		config.ArtKind = artutil.ArtKindDefault
+	}
+
+	if config.AdditionalDownloads.Thumbnail == "" {
+		config.AdditionalDownloads.Thumbnail = artutil.ArtKindNone
+	}
+
+	if config.AdditionalDownloads.Marquee == "" {
+		config.AdditionalDownloads.Marquee = artutil.ArtKindNone
 	}
 
 	gaba.SetRawLogLevel(string(config.LogLevel))
@@ -243,7 +302,7 @@ func (c *Config) SetSlotPreference(romID int, slot string) {
 	}
 }
 
-func (c Config) GetApiTimeout() time.Duration    { return c.ApiTimeout }
+func (c Config) GetApiTimeout() time.Duration    { return c.ApiTimeout.Duration() }
 func (c Config) GetShowCollections() bool        { return c.ShowRegularCollections }
 func (c Config) GetShowSmartCollections() bool   { return c.ShowSmartCollections }
 func (c Config) GetShowVirtualCollections() bool { return c.ShowVirtualCollections }
@@ -305,6 +364,41 @@ func (c Config) GetArtSplashDirectory(platform romm.Platform) string {
 	return cfw.GetArtSplashDirectory(romDir, platform.FSSlug, platform.Name)
 }
 
+func (c Config) GetArtMarqueeDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtMarqueeDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetArtVideoDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtVideoDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetArtThumbnailDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtThumbnailDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetArtBezelDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetArtBezelDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetManualDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetManualDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetFanartDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetFanartDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
+func (c Config) GetBoxbackDirectory(platform romm.Platform) string {
+	romDir := c.GetPlatformRomDirectory(platform)
+	return cfw.GetBoxbackDirectory(romDir, platform.FSSlug, platform.Name)
+}
+
 func (c Config) ShowCollections(host romm.Host) bool {
 	if !c.ShowRegularCollections && !c.ShowSmartCollections && !c.ShowVirtualCollections {
 		return false
@@ -316,7 +410,7 @@ func (c Config) ShowCollections(host romm.Host) bool {
 	}
 
 	// Fallback to network check
-	rc := romm.NewClientFromHost(host, c.ApiTimeout)
+	rc := romm.NewClientFromHost(host, c.ApiTimeout.Duration())
 
 	if c.ShowRegularCollections {
 		col, err := rc.GetCollections()

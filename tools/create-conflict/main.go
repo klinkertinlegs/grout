@@ -56,7 +56,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	client := romm.NewClientFromHost(host, config.ApiTimeout)
+	client := romm.NewClientFromHost(host, config.ApiTimeout.Duration())
 
 	fmt.Printf("Host:     %s\n", host.URL())
 	fmt.Printf("Device:   %s\n", host.DeviceID)

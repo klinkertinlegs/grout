@@ -4,8 +4,10 @@ import (
 	"grout/cfw/allium"
 	"grout/cfw/batocera"
 	"grout/cfw/knulli"
+	"grout/cfw/minui"
 	"grout/cfw/muos"
 	"grout/cfw/nextui"
+	"grout/cfw/onion"
 	"grout/cfw/rocknix"
 	"grout/cfw/spruce"
 	"grout/cfw/trimui"
@@ -29,8 +31,12 @@ func GetRomDirectory() string {
 		return trimui.GetRomDirectory()
 	case Allium:
 		return allium.GetRomDirectory()
+	case Onion:
+		return onion.GetRomDirectory()
 	case Batocera:
 		return batocera.GetRomDirectory()
+	case MinUI:
+		return minui.GetRomDirectory()
 	}
 	return ""
 }
@@ -38,8 +44,11 @@ func GetRomDirectory() string {
 // RomFolderBase returns the base folder name for ROM matching.
 // tagParser is a function that extracts tags from paths (for NextUI).
 func RomFolderBase(path string, tagParser func(string) string) string {
-	if GetCFW() == NextUI {
+	switch GetCFW() {
+	case NextUI:
 		return nextui.RomFolderBase(path, tagParser)
+	case MinUI:
+		return minui.RomFolderBase(path, tagParser)
 	}
 	return path
 }
@@ -61,16 +70,23 @@ func GetBIOSDirectory() string {
 		return trimui.GetBIOSDirectory()
 	case Allium:
 		return allium.GetBIOSDirectory()
+	case Onion:
+		return onion.GetBIOSDirectory()
 	case Batocera:
 		return batocera.GetBIOSDirectory()
+	case MinUI:
+		return minui.GetBIOSDirectory()
 	}
 	return ""
 }
 
 // GetBIOSFilePaths returns the BIOS file paths for a given relative path and platform.
 func GetBIOSFilePaths(relativePath string, platformFSSlug string) []string {
-	if GetCFW() == NextUI {
+	switch GetCFW() {
+	case NextUI:
 		return nextui.GetBIOSFilePaths(relativePath, platformFSSlug)
+	case MinUI:
+		return minui.GetBIOSFilePaths(relativePath, platformFSSlug)
 	}
 	return []string{filepath.Join(GetBIOSDirectory(), relativePath)}
 }
@@ -103,8 +119,12 @@ func GetArtDirectory(romDir string, platformFSSlug, platformName string) string 
 		return trimui.GetArtDirectory(platformFSSlug, platformName)
 	case Allium:
 		return allium.GetArtDirectory(romDir)
+	case Onion:
+		return onion.GetArtDirectory(romDir)
 	case Batocera:
 		return batocera.GetArtDirectory(romDir)
+	case MinUI:
+		return minui.GetArtDirectory(romDir)
 	default:
 		return ""
 	}
@@ -145,8 +165,104 @@ func BaseSavePath() string {
 		return trimui.GetBaseSavePath()
 	case Allium:
 		return allium.GetBaseSavePath()
+	case Onion:
+		return onion.GetBaseSavePath()
 	case Batocera:
 		return batocera.GetBaseSavePath()
+	case MinUI:
+		return minui.GetBaseSavePath()
 	}
 	return ""
+}
+
+func GetArtMarqueeDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetArtDirectory(romDir)
+	case Knulli:
+		return knulli.GetArtDirectory(romDir)
+	case Batocera:
+		return batocera.GetArtDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetArtVideoDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetVideoDirectory(romDir)
+	case Knulli:
+		return knulli.GetVideoDirectory(romDir)
+	case Batocera:
+		return batocera.GetVideoDirectory(romDir)
+	default:
+		return ""
+
+	}
+}
+
+func GetArtThumbnailDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetArtDirectory(romDir)
+	case Knulli:
+		return knulli.GetArtDirectory(romDir)
+	case Batocera:
+		return knulli.GetArtDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetArtBezelDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetBezelDirectory(romDir)
+	case Knulli:
+		return knulli.GetBezelDirectory(romDir)
+	case Batocera:
+		return batocera.GetBezelDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetManualDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetManualDirectory(romDir)
+	case Knulli:
+		return knulli.GetManualDirectory(romDir)
+	case Batocera:
+		return batocera.GetManualDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetBoxbackDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetArtDirectory(romDir)
+	case Knulli:
+		return knulli.GetArtDirectory(romDir)
+	case Batocera:
+		return batocera.GetArtDirectory(romDir)
+	default:
+		return ""
+	}
+}
+
+func GetFanartDirectory(romDir string, platformFSSlug, platformName string) string {
+	switch GetCFW() {
+	case ROCKNIX:
+		return rocknix.GetArtDirectory(romDir)
+	case Knulli:
+		return knulli.GetArtDirectory(romDir)
+	case Batocera:
+		return batocera.GetArtDirectory(romDir)
+	default:
+		return ""
+	}
 }

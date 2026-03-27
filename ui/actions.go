@@ -68,9 +68,11 @@ type SettingsAction int
 
 const (
 	SettingsActionSaved SettingsAction = iota
+	SettingsActionSwitchToToken
 	SettingsActionGeneral
 	SettingsActionCollections
 	SettingsActionAdvanced
+	SettingsActionTools
 	SettingsActionPlatformMapping
 	SettingsActionInfo
 	SettingsActionCheckUpdate
@@ -100,6 +102,14 @@ const (
 	AdvancedSettingsActionSyncArtwork
 	AdvancedSettingsActionServerAddress
 	AdvancedSettingsActionBack
+)
+
+type ToolsSettingsAction int
+
+const (
+	ToolsSettingsActionSaved ToolsSettingsAction = iota
+	ToolsSettingsActionSyncLocalArtwork
+	ToolsSettingsActionBack
 )
 
 type PlatformMappingAction int

@@ -9,7 +9,7 @@ import (
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
 
-const schemaVersion = 10
+const schemaVersion = 11
 
 // nowUTC returns the current UTC time formatted as RFC3339 for consistent datetime storage
 func nowUTC() string {
@@ -82,6 +82,13 @@ func migrateIfNeeded(db *sql.DB) error {
 		}
 	}
 
+	// v11 removes bios_availability table (now derived from platform firmware_count)
+	if currentVersion < 11 {
+		if _, err := db.Exec("DROP TABLE IF EXISTS bios_availability"); err != nil {
+			return fmt.Errorf("migration to v11: drop bios_availability: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -136,7 +143,6 @@ func createTables(db *sql.DB) error {
 			api_name TEXT DEFAULT '',
 			custom_name TEXT DEFAULT '',
 			rom_count INTEGER DEFAULT 0,
-			has_bios INTEGER DEFAULT 0,
 			data_json TEXT NOT NULL,
 			updated_at TEXT,
 			cached_at TEXT NOT NULL
@@ -322,17 +328,6 @@ func createTables(db *sql.DB) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	_, err = tx.Exec(`
-		CREATE TABLE IF NOT EXISTS bios_availability (
-			platform_id INTEGER PRIMARY KEY,
-			has_bios INTEGER NOT NULL DEFAULT 0,
-			checked_at TEXT NOT NULL
-		)
-	`)
-	if err != nil {
-		return err
 	}
 
 	// Track per-platform game sync status

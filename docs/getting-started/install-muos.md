@@ -1,6 +1,6 @@
 # Installation Guide for muOS
 
-This guide will help you install Grout on devices running [muOS](https://muos.dev).
+This guide will help you install Grout on devices running [muOS][muos].
 
 ## Tested Devices
 
@@ -46,3 +46,5 @@ sure to keep the `config.json` file if you do not want to authenticate again, an
 ## Next Steps
 
 After installation is complete, check out the [User Guide](../usage/guide.md) to learn how to use Grout.
+
+--8<-- "docs/_includes/cfw-links.md"

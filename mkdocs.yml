@@ -66,22 +66,28 @@ nav:
   - Home: index.md
   - Quick Start:
       - getting-started/index.md
-      - muOS: getting-started/install-muos.md
+      - Allium: getting-started/install-allium.md
+      - Batocera: getting-started/install-batocera.md
       - Knulli: getting-started/install-knulli.md
+      - muOS: getting-started/install-muos.md
+      - NextUI: getting-started/install-nextui.md
+      - Onion: getting-started/install-onion.md
       - ROCKNIX: getting-started/install-rocknix.md
       - Spruce: getting-started/install-spruce.md
-      - NextUI: getting-started/install-nextui.md
       - TrimUI: getting-started/install-trimui.md
   - Usage:
       - User Guide: usage/guide.md
       - Settings Reference: usage/settings.md
       - Save Sync: usage/save-sync.md
       - CFW Specific Info:
-          - muOS: platforms/muos.md
+          - Allium: platforms/allium.md
+          - Batocera: platforms/BATOCERA.md
           - Knulli: platforms/knulli.md
+          - muOS: platforms/muos.md
+          - NextUI: platforms/nextui.md
+          - Onion: platforms/onion.md
           - ROCKNIX: platforms/rocknix.md
           - Spruce: platforms/spruce.md
-          - NextUI: platforms/nextui.md
           - TrimUI: platforms/trimui.md
   - Contributing:
       - contributing/index.md

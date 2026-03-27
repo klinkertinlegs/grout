@@ -56,7 +56,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (BIOSDownloadOutput, 
 	}
 
 	// Fetch firmware list from RomM first
-	client := romm.NewClientFromHost(input.Host, input.Config.ApiTimeout)
+	client := romm.NewClientFromHost(input.Host, input.Config.ApiTimeout.Duration())
 	firmwareList, err := client.GetFirmware(input.Platform.ID)
 	if err != nil {
 		logger.Error("Failed to fetch firmware from RomM", "error", err, "platform_id", input.Platform.ID)
@@ -218,7 +218,7 @@ func (s *BIOSDownloadScreen) draw(input BIOSDownloadInput) (BIOSDownloadOutput, 
 	}
 
 	headers := make(map[string]string)
-	headers["Authorization"] = input.Host.BasicAuthHeader()
+	headers["Authorization"] = input.Host.AuthHeader()
 
 	res, err := gaba.DownloadManager(downloads, headers, gaba.DownloadManagerOptions{
 		AutoContinueOnComplete: true,

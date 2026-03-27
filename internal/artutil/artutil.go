@@ -9,6 +9,7 @@ const (
 	ArtKindBox3D      ArtKind = "Box3D"
 	ArtKindMixImage   ArtKind = "Miximage"
 	ArtKindMarquee    ArtKind = "Marquee"
+	ArtKindLogo       ArtKind = "Logo"
 	ArtKindTitle      ArtKind = "Title"
 	ArtKindScreenshot ArtKind = "Screenshot"
 	ArtKindVideo      ArtKind = "Video"

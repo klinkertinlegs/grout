@@ -20,9 +20,16 @@ const (
 	MD5Element         = "md5"
 	VideoElement       = "video"
 	MarqueeElement     = "marquee"
+	BezelElement       = "bezel"
+	ManualElement      = "manual"
+	FanartElement      = "fanart"
+	BoxbackElement     = "boxback"
 	ThumbnailElement   = "thumbnail"
 	LangElement        = "lang"
 	RegionElement      = "region"
+	CheevosHashElement = "cheevosHash"
+	CheevosIDElement   = "cheevosId"
+	ScraperIDElement   = "scraperId"
 )
 
 type FileName string
@@ -128,4 +135,13 @@ func (gl *GameList) AdddOrUpdateEntry(name string, info map[string]string) {
 		}
 	}
 
+}
+
+func (gl *GameList) SetGameID(name, id string) {
+	game := gl.GetGameElementByName(name)
+	if game == nil {
+		return
+	}
+
+	game.CreateAttr("id", id)
 }

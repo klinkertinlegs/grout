@@ -6,6 +6,7 @@ import (
 	"grout/internal/stringutil"
 	"grout/romm"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,9 +18,20 @@ type GameListEntry struct {
 	Path string
 }
 
+type artLocation struct {
+	ImagePath     string
+	MarqueePath   string
+	VideoPath     string
+	BezelPath     string
+	ManualPath    string
+	BoxBackPath   string
+	FanartPath    string
+	ThumbnailPath string
+}
+
 type RomGameEntry struct {
 	Game         *romm.Rom
-	ArtLocation  string
+	ArtLocation  artLocation
 	GamePath     string
 	RomDirectory string
 	Platform     *romm.Platform
@@ -40,8 +52,36 @@ func (gl *GameList) AddRomGame(entry RomGameEntry) {
 		gameMetadata[ReleaseDateElement] = fmt.Sprintf("%s", formatted)
 	}
 
-	if entry.ArtLocation != "" {
-		gameMetadata[ImageElement] = entry.ArtLocation
+	if entry.ArtLocation.ImagePath != "" {
+		gameMetadata[ImageElement] = entry.ArtLocation.ImagePath
+	}
+
+	if entry.ArtLocation.ThumbnailPath != "" {
+		gameMetadata[ThumbnailElement] = entry.ArtLocation.ThumbnailPath
+	}
+
+	if entry.ArtLocation.MarqueePath != "" {
+		gameMetadata[MarqueeElement] = entry.ArtLocation.MarqueePath
+	}
+
+	if entry.ArtLocation.VideoPath != "" {
+		gameMetadata[VideoElement] = entry.ArtLocation.VideoPath
+	}
+
+	if entry.ArtLocation.BezelPath != "" {
+		gameMetadata[BezelElement] = entry.ArtLocation.BezelPath
+	}
+
+	if entry.ArtLocation.ManualPath != "" {
+		gameMetadata[ManualElement] = entry.ArtLocation.ManualPath
+	}
+
+	if entry.ArtLocation.BoxBackPath != "" {
+		gameMetadata[BoxbackElement] = entry.ArtLocation.BoxBackPath
+	}
+
+	if entry.ArtLocation.FanartPath != "" {
+		gameMetadata[FanartElement] = entry.ArtLocation.FanartPath
 	}
 
 	if entry.GamePath != "" {
@@ -71,6 +111,20 @@ func (gl *GameList) AddRomGame(entry RomGameEntry) {
 		gameMetadata[DeveloperElement] = strings.Join(entry.Game.Metadatum.Companies, ", ")
 	} else if entry.Game.ScreenScraperMetadata.Companies != nil && len(entry.Game.ScreenScraperMetadata.Companies) > 0 {
 		gameMetadata[DeveloperElement] = strings.Join(entry.Game.ScreenScraperMetadata.Companies, ", ")
+	}
+
+	if entry.Game.ScreenScraperID > 0 {
+		screenscraperID := strconv.Itoa(entry.Game.ScreenScraperID)
+		gameMetadata[ScraperIDElement] = screenscraperID
+		gl.SetGameID(entry.Game.Name, screenscraperID)
+	}
+
+	if entry.Game.RetroAchievementsID > 0 {
+		gameMetadata[CheevosIDElement] = strconv.Itoa(entry.Game.RetroAchievementsID)
+	}
+
+	if entry.Game.RetroAchievementsHash != "" {
+		gameMetadata[CheevosHashElement] = entry.Game.RetroAchievementsHash
 	}
 
 	gl.AdddOrUpdateEntry(entry.Game.Name, gameMetadata)

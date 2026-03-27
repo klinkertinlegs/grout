@@ -98,6 +98,45 @@ func (c *Client) tryAlternateProtocol(originalScheme string, isSuccess func(resp
 	return nil
 }
 
+type TokenExchangeRequest struct {
+	Code string `json:"code"`
+}
+
+type TokenExchangeResponse struct {
+	RawToken  string   `json:"raw_token"`
+	Name      string   `json:"name"`
+	Scopes    []string `json:"scopes"`
+	ExpiresAt string   `json:"expires_at"`
+}
+
+// ExchangeToken exchanges a pairing code for an API token. This is an unauthenticated endpoint.
+func ExchangeToken(baseURL string, code string, insecureSkipVerify bool) (*TokenExchangeResponse, error) {
+	client := NewClient(baseURL, WithInsecureSkipVerify(insecureSkipVerify))
+	var result TokenExchangeResponse
+	err := client.doRequest("POST", endpointTokenExchange, nil, TokenExchangeRequest{Code: code}, &result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+// ValidateToken checks that the client's auth credentials work by hitting an authenticated endpoint.
+func (c *Client) ValidateToken() error {
+	var platforms []Platform
+	return c.doRequest("GET", endpointPlatforms, nil, nil, &platforms)
+}
+
+type CurrentUser struct {
+	Username string `json:"username"`
+}
+
+// GetCurrentUser fetches the authenticated user's info.
+func (c *Client) GetCurrentUser() (CurrentUser, error) {
+	var user CurrentUser
+	err := c.doRequest("GET", endpointCurrentUser, nil, nil, &user)
+	return user, err
+}
+
 func (c *Client) Login(username, password string) error {
 	req, err := http.NewRequest("POST", c.baseURL+endpointLogin, nil)
 	if err != nil {

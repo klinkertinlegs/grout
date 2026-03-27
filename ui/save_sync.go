@@ -36,7 +36,7 @@ func NewSaveSyncScreen() *SaveSyncScreen {
 func (s *SaveSyncScreen) Execute(input SaveSyncInput) SaveSyncOutput {
 	config := input.Config
 	host := input.Host
-	client := romm.NewClientFromHost(host, config.ApiTimeout)
+	client := romm.NewClientFromHost(host, config.ApiTimeout.Duration())
 
 	// If we have resolved items from the conflict screen, skip to execute phase
 	if input.ResolvedItems != nil {

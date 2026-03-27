@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"grout/cache"
 	"grout/internal"
+	"grout/internal/artutil"
+	"grout/internal/fileutil"
 	"grout/internal/imageutil"
 	"grout/romm"
+	"net/url"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 
@@ -21,8 +25,9 @@ const (
 )
 
 type ArtworkSyncInput struct {
-	Config internal.Config
-	Host   romm.Host
+	Config         internal.Config
+	Host           romm.Host
+	DownloadedOnly bool
 }
 
 type ArtworkSyncOutput struct{}
@@ -33,11 +38,8 @@ func NewArtworkSyncScreen() *ArtworkSyncScreen {
 	return &ArtworkSyncScreen{}
 }
 
-func (s *ArtworkSyncScreen) Execute(config internal.Config, host romm.Host) ArtworkSyncOutput {
-	s.draw(ArtworkSyncInput{
-		Config: config,
-		Host:   host,
-	})
+func (s *ArtworkSyncScreen) Execute(input ArtworkSyncInput) ArtworkSyncOutput {
+	s.draw(input)
 	return ArtworkSyncOutput{}
 }
 
@@ -51,7 +53,7 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 		platforms, err = cm.GetPlatforms()
 	}
 	if len(platforms) == 0 {
-		client := romm.NewClientFromHost(input.Host, input.Config.ApiTimeout)
+		client := romm.NewClientFromHost(input.Host, input.Config.ApiTimeout.Duration())
 		platforms, err = client.GetPlatforms()
 		if err != nil {
 			logger.Error("Failed to fetch platforms", "error", err)
@@ -137,7 +139,19 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 					return nil, nil
 				}
 
-				if artForceRes.SelectedValue == SyncMissingOnlyOption {
+				if input.DownloadedOnly {
+					var downloaded []romm.Rom
+					for _, r := range roms {
+						if r.IsDownloaded(input.Config) {
+							downloaded = append(downloaded, r)
+						}
+					}
+					roms = downloaded
+
+					if artForceRes.SelectedValue == SyncMissingOnlyOption {
+						roms = filterMissingCFWArt(roms, p, input.Config, input.Host)
+					}
+				} else if artForceRes.SelectedValue == SyncMissingOnlyOption {
 					roms = cache.GetMissingArtwork(roms)
 				}
 
@@ -186,31 +200,34 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 	}
 
 	// Collect artwork from selected platforms
-	var allMissingArtwork []romm.Rom
+	var selectedResults []platformRoms
 	for _, idx := range sel.Selected {
 		pr := sel.Items[idx].Metadata.(platformArtwork)
-		allMissingArtwork = append(allMissingArtwork, pr.roms...)
+		selectedResults = append(selectedResults, platformRoms{platform: pr.platform, roms: pr.roms})
 	}
 
 	var downloads []gaba.Download
-	romsByLocation := make(map[string]romm.Rom)
 
-	for _, rom := range allMissingArtwork {
-		downloadURL := cache.GetArtworkCoverPath(rom, input.Config.ArtKind, input.Host)
-		if downloadURL == "" {
-			continue
+	if input.DownloadedOnly {
+		downloads = buildCFWArtDownloads(selectedResults, input.Config, input.Host)
+	} else {
+		for _, sr := range selectedResults {
+			for _, rom := range sr.roms {
+				downloadURL := cache.GetArtworkCoverPath(rom, input.Config.ArtKind, input.Host)
+				if downloadURL == "" {
+					continue
+				}
+
+				cachePath := cache.GetArtworkCachePath(rom.PlatformFSSlug, rom.ID)
+				cache.EnsureArtworkCacheDir(rom.PlatformFSSlug)
+
+				downloads = append(downloads, gaba.Download{
+					URL:         downloadURL,
+					Location:    cachePath,
+					DisplayName: rom.Name,
+				})
+			}
 		}
-
-		cachePath := cache.GetArtworkCachePath(rom.PlatformFSSlug, rom.ID)
-
-		cache.EnsureArtworkCacheDir(rom.PlatformFSSlug)
-
-		downloads = append(downloads, gaba.Download{
-			URL:         downloadURL,
-			Location:    cachePath,
-			DisplayName: rom.Name,
-		})
-		romsByLocation[cachePath] = rom
 	}
 
 	if len(downloads) == 0 {
@@ -223,7 +240,7 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 	}
 
 	headers := make(map[string]string)
-	headers["Authorization"] = input.Host.BasicAuthHeader()
+	headers["Authorization"] = input.Host.AuthHeader()
 
 	res, err := gaba.DownloadManager(downloads, headers, gaba.DownloadManagerOptions{
 		AutoContinueOnComplete: true,
@@ -275,6 +292,19 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 	finalCount := int(atomic.LoadInt32(&successCount))
 	logger.Info("Artwork sync complete", "success", finalCount, "failed", len(res.Failed))
 
+	for _, failed := range res.Failed {
+		path := failed.Download.URL
+		if u, err := url.Parse(failed.Download.URL); err == nil {
+			path = u.Path
+		}
+		logger.Error("Failed to download artwork",
+			"path", path,
+			"name", failed.Download.DisplayName,
+			"timeout", failed.Download.Timeout,
+			"error", failed.Error,
+		)
+	}
+
 	if finalCount > 0 {
 		gaba.ConfirmationMessage(
 			fmt.Sprintf(i18n.Localize(&goi18n.Message{ID: "artwork_sync_complete", Other: "Successfully downloaded %d artwork images."}, nil), finalCount),
@@ -288,4 +318,98 @@ func (s *ArtworkSyncScreen) draw(input ArtworkSyncInput) {
 			gaba.MessageOptions{},
 		)
 	}
+}
+
+// filterMissingCFWArt returns only roms that are missing art in the CFW art directory.
+func filterMissingCFWArt(roms []romm.Rom, platform romm.Platform, config internal.Config, host romm.Host) []romm.Rom {
+	var missing []romm.Rom
+	for _, rom := range roms {
+		if !cache.HasArtworkURL(rom) {
+			continue
+		}
+		artDir := config.GetArtDirectory(platform)
+		artPath := filepath.Join(artDir, rom.FsNameNoExt+".png")
+		if !fileutil.FileExists(artPath) {
+			missing = append(missing, rom)
+			continue
+		}
+		// Also check preview and splash if configured
+		if config.DownloadArtScreenshotPreview {
+			previewDir := config.GetArtPreviewDirectory(platform)
+			if previewDir != "" && rom.GetScreenshotURL(host) != "" {
+				if !fileutil.FileExists(filepath.Join(previewDir, rom.FsNameNoExt+".png")) {
+					missing = append(missing, rom)
+					continue
+				}
+			}
+		}
+		if config.DownloadSplashArt != artutil.ArtKindNone {
+			splashDir := config.GetArtSplashDirectory(platform)
+			if splashDir != "" && rom.GetSplashArtURL(config.DownloadSplashArt, host) != "" {
+				if !fileutil.FileExists(filepath.Join(splashDir, rom.FsNameNoExt+".png")) {
+					missing = append(missing, rom)
+					continue
+				}
+			}
+		}
+	}
+	return missing
+}
+
+type platformRoms struct {
+	platform romm.Platform
+	roms     []romm.Rom
+}
+
+// buildCFWArtDownloads builds download entries targeting CFW art directories.
+func buildCFWArtDownloads(results []platformRoms, config internal.Config, host romm.Host) []gaba.Download {
+	var downloads []gaba.Download
+
+	for _, sr := range results {
+		for _, rom := range sr.roms {
+			artFileName := rom.FsNameNoExt + ".png"
+
+			// Cover art
+			coverURL := rom.GetArtworkURL(config.ArtKind, host)
+			if coverURL != "" {
+				artDir := config.GetArtDirectory(sr.platform)
+				artLocation := filepath.Join(artDir, artFileName)
+				downloads = append(downloads, gaba.Download{
+					URL:         coverURL,
+					Location:    artLocation,
+					DisplayName: rom.Name,
+				})
+			}
+
+			// Screenshot preview
+			if config.DownloadArtScreenshotPreview {
+				previewDir := config.GetArtPreviewDirectory(sr.platform)
+				if previewDir != "" {
+					if screenshotURL := rom.GetScreenshotURL(host); screenshotURL != "" {
+						downloads = append(downloads, gaba.Download{
+							URL:         screenshotURL,
+							Location:    filepath.Join(previewDir, artFileName),
+							DisplayName: rom.Name,
+						})
+					}
+				}
+			}
+
+			// Splash art
+			if config.DownloadSplashArt != artutil.ArtKindNone {
+				splashDir := config.GetArtSplashDirectory(sr.platform)
+				if splashDir != "" {
+					if splashURL := rom.GetSplashArtURL(config.DownloadSplashArt, host); splashURL != "" {
+						downloads = append(downloads, gaba.Download{
+							URL:         splashURL,
+							Location:    filepath.Join(splashDir, artFileName),
+							DisplayName: rom.Name,
+						})
+					}
+				}
+			}
+		}
+	}
+
+	return downloads
 }

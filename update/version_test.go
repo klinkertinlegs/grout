@@ -93,6 +93,12 @@ func TestCompareVersions(t *testing.T) {
 		{"4.6.0.0-beta.1", "4.6.0.1", -1, "4-component beta vs higher build"},
 		{"4.6.0.1", "4.6.0.0-beta.1", 1, "4-component higher build vs beta"},
 
+		// Multi-digit prerelease numbers (must compare numerically, not lexicographically)
+		{"v4.8.0.0-beta.6", "v4.8.0.0-beta.10", -1, "beta.10 should be newer than beta.6"},
+		{"v4.8.0.0-beta.10", "v4.8.0.0-beta.6", 1, "beta.6 should be older than beta.10"},
+		{"v4.8.0.0-beta.10", "v4.8.0.0-beta.10", 0, "same multi-digit beta"},
+		{"v1.0.0-beta.9", "v1.0.0-beta.20", -1, "beta.20 newer than beta.9"},
+
 		// Mixed 3 and 4 component (3-component defaults build to 0)
 		{"1.2.3", "1.2.3.0", 0, "3-component equals 4-component with build 0"},
 		{"1.2.3", "1.2.3.1", -1, "3-component older than 4-component with build 1"},

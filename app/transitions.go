@@ -56,6 +56,8 @@ func buildTransitionFunc(state *AppState, quitOnBack bool, initialShowCollection
 			return transitionGeneralSettings(ctx, result)
 		case ScreenCollectionsSettings:
 			return transitionCollectionsSettings(ctx, result)
+		case ScreenToolsSettings:
+			return transitionToolsSettings(ctx, result)
 		case ScreenAdvancedSettings:
 			return transitionAdvancedSettings(ctx, result)
 		case ScreenPlatformMapping:
@@ -70,6 +72,14 @@ func buildTransitionFunc(state *AppState, quitOnBack bool, initialShowCollection
 			return popOrExit(stack)
 		case ScreenArtworkSync:
 			return popOrExit(stack)
+		case ScreenSwitchToToken:
+			// Pop the stacked settings entry so we don't go back to stale state
+			stack.Pop()
+			return ScreenSettings, ui.SettingsInput{
+				Config: ctx.state.Config,
+				CFW:    ctx.state.CFW,
+				Host:   ctx.state.Host,
+			}
 		case ScreenUpdateCheck:
 			return transitionUpdateCheck(ctx, result)
 		case ScreenGameFilters:
@@ -616,6 +626,14 @@ func transitionSettings(ctx *transitionContext, result any) (router.Screen, any)
 		ctx.stack.Push(ScreenSettings, pushInput, r)
 		return ScreenCollectionsSettings, ui.CollectionsSettingsInput{Config: ctx.state.Config}
 
+	case ui.SettingsActionSwitchToToken:
+		ctx.stack.Push(ScreenSettings, pushInput, r)
+		return ScreenSwitchToToken, nil
+
+	case ui.SettingsActionTools:
+		ctx.stack.Push(ScreenSettings, pushInput, r)
+		return ScreenToolsSettings, ui.ToolsSettingsInput{Config: ctx.state.Config, Host: ctx.state.Host}
+
 	case ui.SettingsActionAdvanced:
 		ctx.stack.Push(ScreenSettings, pushInput, r)
 		return ScreenAdvancedSettings, ui.AdvancedSettingsInput{Config: ctx.state.Config, Host: ctx.state.Host}
@@ -624,7 +642,7 @@ func transitionSettings(ctx *transitionContext, result any) (router.Screen, any)
 		ctx.stack.Push(ScreenSettings, pushInput, r)
 		return ScreenPlatformMapping, ui.PlatformMappingInput{
 			Host:             ctx.state.Host,
-			ApiTimeout:       ctx.state.Config.ApiTimeout,
+			ApiTimeout:       ctx.state.Config.ApiTimeout.Duration(),
 			CFW:              ctx.state.CFW,
 			RomDirectory:     cfw.GetRomDirectory(),
 			ExistingMappings: ctx.state.Config.DirectoryMappings,
@@ -687,6 +705,25 @@ func transitionCollectionsSettings(ctx *transitionContext, result any) (router.S
 		ctx.showCollections = ctx.state.Config.ShowCollections(ctx.state.Host)
 	}
 	return popOrExit(ctx.stack)
+}
+
+func transitionToolsSettings(ctx *transitionContext, result any) (router.Screen, any) {
+	r := result.(ui.ToolsSettingsOutput)
+
+	pushInput := ui.ToolsSettingsInput{Config: ctx.state.Config, Host: ctx.state.Host}
+
+	switch r.Action {
+	case ui.ToolsSettingsActionSyncLocalArtwork:
+		ctx.stack.Push(ScreenToolsSettings, pushInput, r)
+		return ScreenArtworkSync, ui.ArtworkSyncInput{
+			Config:         *ctx.state.Config,
+			Host:           ctx.state.Host,
+			DownloadedOnly: true,
+		}
+
+	default:
+		return popOrExit(ctx.stack)
+	}
 }
 
 func transitionAdvancedSettings(ctx *transitionContext, result any) (router.Screen, any) {

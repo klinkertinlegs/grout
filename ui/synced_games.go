@@ -124,7 +124,7 @@ func (s *SyncedGamesScreen) Draw(input SyncedGamesInput) (SyncedGamesOutput, err
 	})
 
 	// Outer loop: platform list
-	client := romm.NewClientFromHost(input.Host, input.Config.ApiTimeout)
+	client := romm.NewClientFromHost(input.Host, input.Config.ApiTimeout.Duration())
 	platformIndex := 0
 	platformVisibleStart := 0
 

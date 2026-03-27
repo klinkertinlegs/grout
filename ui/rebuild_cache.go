@@ -94,7 +94,7 @@ func (s *RebuildCacheScreen) Draw(input RebuildCacheInput) (RebuildCacheOutput, 
 
 	// Only rebuild metadata cache if metadata was cleared
 	if selected == clearOptionMetadata || selected == clearOptionBoth {
-		platforms, err := internal.GetMappedPlatforms(input.Host, input.Config.DirectoryMappings, input.Config.ApiTimeout)
+		platforms, err := internal.GetMappedPlatforms(input.Host, input.Config.DirectoryMappings, input.Config.ApiTimeout.Duration())
 		if err != nil {
 			logger.Error("Failed to fetch platforms", "error", err)
 			return RebuildCacheOutput{Action: RebuildCacheActionError}, err

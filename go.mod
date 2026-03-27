@@ -4,7 +4,7 @@ go 1.25.6
 
 require (
 	github.com/BrandonKowalski/certifiable v1.3.0
-	github.com/BrandonKowalski/gabagool/v2 v2.13.0
+	github.com/BrandonKowalski/gabagool/v2 v2.13.7
 	github.com/beevik/etree v1.6.0
 	github.com/bodgit/sevenzip v1.6.1
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
@@ -13,7 +13,7 @@ require (
 	go.uber.org/atomic v1.11.0
 	golang.org/x/image v0.37.0
 	golang.org/x/text v0.35.0
-	modernc.org/sqlite v1.46.1
+	modernc.org/sqlite v1.47.0
 )
 
 require (
@@ -25,7 +25,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/holoplot/go-evdev v0.0.0-20250804134636-ab1d56a1fe83 // indirect
-	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.26 // indirect
@@ -40,7 +40,6 @@ require (
 	go4.org v0.0.0-20260112195520-a5071408f32f // indirect
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/tools v0.42.0 // indirect
 	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect

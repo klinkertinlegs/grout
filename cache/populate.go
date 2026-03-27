@@ -107,9 +107,6 @@ func (cm *Manager) populateCache(platforms []romm.Platform, progress *atomic.Flo
 		}
 	}
 
-	// BIOS availability - fire and forget
-	go cm.fetchBIOSAvailability(platforms, client)
-
 	// Fetch all games in bulk (in goroutine so UI can update)
 	var wg sync.WaitGroup
 	var firstErr error
@@ -452,38 +449,6 @@ func (cm *Manager) purgeDeletedItems(client *romm.Client) {
 			logger.Debug("Failed to purge deleted collections", "error", err)
 		}
 	}
-}
-
-func (cm *Manager) fetchBIOSAvailability(platforms []romm.Platform, client *romm.Client) {
-	logger := gaba.GetLogger()
-
-	if client == nil {
-		client = romm.NewClientFromHost(cm.host, cm.config.GetApiTimeout())
-	}
-
-	var wg sync.WaitGroup
-	sem := make(chan struct{}, MaxConcurrentPlatformFetches)
-
-	for _, platform := range platforms {
-		wg.Add(1)
-		go func(p romm.Platform) {
-			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
-
-			firmware, err := client.GetFirmware(p.ID)
-			if err != nil {
-				logger.Debug("Failed to fetch BIOS info", "platform", p.Name, "error", err)
-				cm.SetBIOSAvailability(p.ID, false)
-				return
-			}
-
-			hasBIOS := len(firmware) > 0
-			cm.SetBIOSAvailability(p.ID, hasBIOS)
-		}(platform)
-	}
-
-	wg.Wait()
 }
 
 func (cm *Manager) RefreshPlatformGames(platform romm.Platform) error {

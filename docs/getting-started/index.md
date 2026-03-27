@@ -1,13 +1,13 @@
 # Quick Start Guide
 
-Get up and running with Grout in 5 steps.
+Get up and running with Grout in five steps.
 
 ## Before You Begin
 
 Make sure you have:
 
 - A RomM server running and accessible
-- A compatible device running muOS, Knulli, ROCKNIX, Spruce v4, NextUI, or Batocera
+- A compatible device running [Allium][allium], [Batocera][batocera], [Knulli][knulli], [muOS][muos], [NextUI][nextui], [Onion][onion], [ROCKNIX][rocknix], [Spruce v4][spruce], or [TrimUI][trimui]
 - Your device connected to Wi-Fi
 
 ---
@@ -18,12 +18,15 @@ Make sure you have:
 
 Choose your platform:
 
-- [muOS Installation](install-muos.md)
+- [Allium Installation](install-allium.md)
+- [Batocera Installation](install-batocera.md)
 - [Knulli Installation](install-knulli.md)
+- [muOS Installation](install-muos.md)
+- [NextUI Installation](install-nextui.md)
+- [Onion Installation](install-onion.md)
 - [ROCKNIX Installation](install-rocknix.md)
 - [Spruce Installation](install-spruce.md)
-- [NextUI Installation](install-nextui.md)
-- [Batocera Installation](install-batocera.md)
+- [TrimUI Installation](install-trimui.md)
 
 ### Step 2: Launch and Select Language
 
@@ -31,17 +34,9 @@ When you first launch Grout, select your preferred language using `Left/Right`, 
 
 ### Step 3: Connect to Your RomM Server
 
-Enter your connection details:
+Enter your connection details and authenticate. 
 
-1. **Protocol** - HTTP or HTTPS
-2. **Hostname** - Your server address (without `http://` or `https://`)
-3. **Port** - Only if using a non-standard port
-4. **Username** and **Password** - Your RomM credentials
-
-Press `Start` to connect.
-
-!!! tip
-Using a self-signed certificate? Set **SSL Certificates** to **Skip Verification**.
+See the [User Guide](../usage/guide.md#server-connection) for detailed instructions.
 
 ### Step 4: Map Your Platforms
 
@@ -69,3 +64,14 @@ That's it! Your game is now on your device.
 - [Full User Guide](../usage/guide.md) - Complete feature documentation
 - [Settings Reference](../usage/settings.md) - Configure Grout to your preferences
 - [Save Sync Guide](../usage/save-sync.md) - Keep saves synchronized across devices
+
+---
+
+## A small request: Spread Joy!
+
+A significant amount of time has been spent building Grout.
+
+If you enjoy using Grout and feel inclined to pay it forward, go do something nice for someone!
+
+--8<-- "docs/_includes/cfw-links.md"
+

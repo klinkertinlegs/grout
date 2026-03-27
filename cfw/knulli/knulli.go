@@ -40,3 +40,15 @@ func GetArtDirectory(romDir string) string {
 func GetGroutGamelist() string {
 	return filepath.Join(GetRomDirectory(), "tools", "gamelist.xml")
 }
+
+func GetVideoDirectory(romDir string) string {
+	return filepath.Join(romDir, "videos")
+}
+
+func GetManualDirectory(romDir string) string {
+	return filepath.Join(romDir, "manuals")
+}
+
+func GetBezelDirectory(romDir string) string {
+	return filepath.Join(romDir, "bezels")
+}
