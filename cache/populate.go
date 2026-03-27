@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	DefaultRomPageSize           = 100
+	DefaultRomPageSize           = 1000
 	MaxConcurrentPlatformFetches = 10
 )
 
