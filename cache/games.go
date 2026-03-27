@@ -126,20 +126,33 @@ func anySliceToStrings(items []any) []string {
 
 // resolveLookupID returns the integer ID for a value in a lookup table,
 // inserting a new row if the value doesn't already exist.
-func resolveLookupID(tx *sql.Tx, lookupTable, value string) (int64, error) {
-	// Try INSERT OR IGNORE first, then SELECT — avoids the common SELECT-miss path
+func resolveLookupID(tx *sql.Tx, lookupTable, value string, idCache map[string]int64) (int64, error) {
+	// Create a unique key for the map (e.g., "genres:Action")
+	cacheKey := lookupTable + ":" + value
+	
+	// If we already looked this up recently, return it instantly!
+	if id, ok := idCache[cacheKey]; ok {
+		return id, nil
+	}
+
 	_, err := tx.Exec("INSERT OR IGNORE INTO "+lookupTable+" (name) VALUES (?)", value)
 	if err != nil {
 		return 0, err
 	}
 	var id int64
 	err = tx.QueryRow("SELECT id FROM "+lookupTable+" WHERE name = ?", value).Scan(&id)
+	
+	// Save it to the map so we never query the DB for this exact string again
+	if err == nil {
+		idCache[cacheKey] = id
+	}
+	
 	return id, err
 }
 
 // batchInsertJunction resolves string values to lookup IDs and inserts (game_id, fk_id)
 // rows into a junction table in batches within the given transaction.
-func batchInsertJunction(tx *sql.Tx, junctionTable, fkCol, lookupTable string, gameID int, values []string) error {
+func batchInsertJunction(tx *sql.Tx, junctionTable, fkCol, lookupTable string, gameID int, values []string, idCache map[string]int64) error {
 	if len(values) == 0 {
 		return nil
 	}
@@ -147,7 +160,7 @@ func batchInsertJunction(tx *sql.Tx, junctionTable, fkCol, lookupTable string, g
 	// Resolve all values to lookup IDs first
 	ids := make([]int64, 0, len(values))
 	for _, val := range values {
-		id, err := resolveLookupID(tx, lookupTable, val)
+		id, err := resolveLookupID(tx, lookupTable, val, idCache)
 		if err != nil {
 			return err
 		}
@@ -207,19 +220,26 @@ func (cm *Manager) SavePlatformGames(platformID int, games []romm.Rom) error {
 	}
 	defer stmt.Close()
 
-	// Delete existing junction table data for this platform's games
 	for _, table := range junctionTables {
-		_, err := tx.Exec(
-			"DELETE FROM "+table+" WHERE game_id IN (SELECT id FROM games WHERE platform_id = ?)",
-			platformID,
-		)
-		if err != nil {
+		if _, err := tx.Exec("DELETE FROM "+table+" WHERE game_id IN (SELECT id FROM games WHERE platform_id = ?)", platformID); err != nil {
 			return newCacheError("save", "games", GetPlatformCacheKey(platformID), err)
 		}
 	}
 
 	now := nowUTC()
 	cacheKey := GetPlatformCacheKey(platformID)
+	idCache := make(map[string]int64)
+
+	// Structures to hold our mega-batches
+	type junctionRow struct {
+		gameID int
+		fkID   int64
+	}
+	type megaBatch struct {
+		fkCol string
+		rows  []junctionRow
+	}
+	megaBatches := make(map[string]*megaBatch)
 
 	for _, game := range games {
 		dataJSON, err := json.Marshal(game)
@@ -228,33 +248,17 @@ func (cm *Manager) SavePlatformGames(platformID int, games []romm.Rom) error {
 		}
 
 		_, err = stmt.Exec(
-			game.ID,
-			game.PlatformID,
-			game.PlatformFSSlug,
-			game.Name,
-			game.FsName,
-			game.FsNameNoExt,
-			game.CrcHash,
-			game.Md5Hash,
-			game.Sha1Hash,
-			parseMaxPlayerCount(game),
-			game.Metadatum.FirstReleaseDate,
-			game.Metadatum.AverageRating,
-			game.FsSizeBytes,
-			boolToInt(game.IsIdentified),
-			boolToInt(game.IsUnidentified),
-			boolToInt(game.MissingFromFs),
-			boolToInt(game.HasManual),
-			boolToInt(game.HasMultipleFiles),
-			string(dataJSON),
-			game.UpdatedAt,
-			now,
+			game.ID, game.PlatformID, game.PlatformFSSlug, game.Name,
+			game.FsName, game.FsNameNoExt, game.CrcHash, game.Md5Hash, game.Sha1Hash,
+			parseMaxPlayerCount(game), game.Metadatum.FirstReleaseDate, game.Metadatum.AverageRating,
+			game.FsSizeBytes, boolToInt(game.IsIdentified), boolToInt(game.IsUnidentified),
+			boolToInt(game.MissingFromFs), boolToInt(game.HasManual), boolToInt(game.HasMultipleFiles),
+			string(dataJSON), game.UpdatedAt, now,
 		)
 		if err != nil {
 			return newCacheError("save", "games", cacheKey, err)
 		}
 
-		// Populate junction tables (junction, fk_col, lookup, values)
 		junctions := []struct {
 			junctionTable, fkCol, lookupTable string
 			values                            []string
@@ -268,8 +272,42 @@ func (cm *Manager) SavePlatformGames(platformID int, games []romm.Rom) error {
 			{"game_languages", "language_id", "languages", game.Languages},
 			{"game_tags", "tag_id", "tags", anySliceToStrings(game.Tags)},
 		}
+
 		for _, jt := range junctions {
-			if err := batchInsertJunction(tx, jt.junctionTable, jt.fkCol, jt.lookupTable, game.ID, jt.values); err != nil {
+			if megaBatches[jt.junctionTable] == nil {
+				megaBatches[jt.junctionTable] = &megaBatch{fkCol: jt.fkCol}
+			}
+			for _, val := range jt.values {
+				lookupID, err := resolveLookupID(tx, jt.lookupTable, val, idCache)
+				if err != nil {
+					return newCacheError("save", "games", cacheKey, err)
+				}
+				megaBatches[jt.junctionTable].rows = append(megaBatches[jt.junctionTable].rows, junctionRow{game.ID, lookupID})
+			}
+		}
+	}
+
+	// Insert all junction data in massive chunks of 400
+	const batchSize = 400
+	for tableName, batchData := range megaBatches {
+		rows := batchData.rows
+		for i := 0; i < len(rows); i += batchSize {
+			end := i + batchSize
+			if end > len(rows) {
+				end = len(rows)
+			}
+			chunk := rows[i:end]
+
+			query := "INSERT OR IGNORE INTO " + tableName + " (game_id, " + batchData.fkCol + ") VALUES "
+			args := make([]any, 0, len(chunk)*2)
+			for j, row := range chunk {
+				if j > 0 {
+					query += ", "
+				}
+				query += "(?, ?)"
+				args = append(args, row.gameID, row.fkID)
+			}
+			if _, err := tx.Exec(query, args...); err != nil {
 				return newCacheError("save", "games", cacheKey, err)
 			}
 		}
