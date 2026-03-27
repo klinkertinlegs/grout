@@ -145,8 +145,8 @@ func (cm *Manager) enableBulkLoadMode() {
 	pragmas := []string{
 		"PRAGMA synchronous = OFF",
 		"PRAGMA journal_mode = OFF",
-		"PRAGMA cache_size = 100000",
-		"PRAGMA temp_store = MEMORY",
+		"PRAGMA cache_size = -4000",    // -4000 means exactly 4MB of RAM!
+		"PRAGMA temp_store = DEFAULT",  // Use the SD card for temp tables, not RAM!
 		"PRAGMA locking_mode = EXCLUSIVE",
 	}
 	for _, p := range pragmas {
