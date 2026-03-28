@@ -570,6 +570,10 @@ func download(client *romm.Client, config *internal.Config, deviceID string, ite
 
 	logger.Debug("Downloading save", "romID", item.LocalSave.RomID, "romName", item.LocalSave.RomName, "saveID", item.RemoteSave.ID)
 
+	if !item.LocalSave.IsDirectorySave && IsDirectorySavePlatform(item.LocalSave.FSSlug) {
+		item.LocalSave.IsDirectorySave = true
+	}
+
 	if item.LocalSave.FilePath != "" {
 		if info, err := os.Stat(item.LocalSave.FilePath); err == nil {
 			backupDir := filepath.Join(filepath.Dir(item.LocalSave.FilePath), ".backup")
