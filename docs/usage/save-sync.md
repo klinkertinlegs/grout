@@ -35,6 +35,10 @@ When you run Save Sync, Grout:
 5. Resolves any conflicts (prompting you if needed)
 6. Syncs saves based on which version is newer
 
+!!! note
+    Only games that have ROM files on your device are included in the sync. If a ROM exists in your RomM library but
+    is not present on the device, its saves will not be synced.
+
 ---
 
 ## ROM Matching

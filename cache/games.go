@@ -7,9 +7,27 @@ import (
 	"grout/romm"
 	"strconv"
 	"strings"
+	"unicode"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
 )
+
+// normalizeForMatch strips punctuation, collapses whitespace, and lowercases
+// for fuzzy title matching (e.g., "BUST A MOVE DELUXE" matches "Bust-a-Move: Deluxe").
+func normalizeForMatch(s string) string {
+	var b strings.Builder
+	lastSpace := false
+	for _, r := range strings.ToLower(s) {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			b.WriteRune(r)
+			lastSpace = false
+		} else if !lastSpace {
+			b.WriteRune(' ')
+			lastSpace = true
+		}
+	}
+	return strings.TrimSpace(b.String())
+}
 
 type Type string
 
@@ -1079,6 +1097,60 @@ func (cm *Manager) GetRomByFSLookup(fsSlug, fsNameNoExt string) (romm.Rom, error
 	if err := json.Unmarshal([]byte(dataJSON), &game); err != nil {
 		cm.stats.recordError()
 		return romm.Rom{}, newCacheError("get", "games", "fs_lookup", err)
+	}
+
+	cm.stats.recordHit()
+	return game, nil
+}
+
+func (cm *Manager) GetRomByNameLookup(fsSlug, name string) (romm.Rom, error) {
+	if cm == nil || !cm.initialized {
+		return romm.Rom{}, ErrNotInitialized
+	}
+
+	cm.mu.RLock()
+	defer cm.mu.RUnlock()
+
+	var dataJSON string
+
+	// Try exact match first
+	err := cm.db.QueryRow(`
+		SELECT data_json FROM games WHERE platform_fs_slug = ? AND name = ? LIMIT 1
+	`, fsSlug, name).Scan(&dataJSON)
+
+	// Fall back to normalized match (case-insensitive, punctuation-stripped)
+	if errors.Is(err, sql.ErrNoRows) {
+		rows, qErr := cm.db.Query(`
+			SELECT name, data_json FROM games WHERE platform_fs_slug = ?
+		`, fsSlug)
+		if qErr == nil {
+			defer rows.Close()
+			normalized := normalizeForMatch(name)
+			for rows.Next() {
+				var dbName, dbJSON string
+				if rows.Scan(&dbName, &dbJSON) == nil {
+					if normalizeForMatch(dbName) == normalized {
+						dataJSON = dbJSON
+						err = nil
+						break
+					}
+				}
+			}
+		}
+	}
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			cm.stats.recordMiss()
+			return romm.Rom{}, ErrCacheMiss
+		}
+		cm.stats.recordError()
+		return romm.Rom{}, newCacheError("get", "games", "name_lookup", err)
+	}
+
+	var game romm.Rom
+	if err := json.Unmarshal([]byte(dataJSON), &game); err != nil {
+		cm.stats.recordError()
+		return romm.Rom{}, newCacheError("get", "games", "name_lookup", err)
 	}
 
 	cm.stats.recordHit()
