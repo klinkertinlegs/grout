@@ -78,11 +78,11 @@ task all-local
 
 The build happens in two stages:
 
-1. **Docker Build** (`task build`) - Cross-compiles the Go binary for ARM64 Linux inside a Docker container. This
+1. **Docker Build** (`task build-arm64`) - Cross-compiles the Go binary for ARM64 Linux inside a Docker container. This
    ensures consistent builds regardless of your host OS and handles SDL2 dependencies.
 
-2. **Extract** (`task extract`) - Copies the compiled binary and required shared libraries (like `libSDL2_gfx`) from
-   the Docker container to the local `build/` directory.
+2. **Extract** (`task extract-arm64`) - Copies the compiled binary and required shared libraries (like `libSDL2_gfx`) from
+   the Docker container to the local `build64/` directory.
 
 ### Platform-Specific Packaging
 
@@ -121,7 +121,7 @@ These tasks will remove any existing installation and push the freshly built pac
 When developing gabagool alongside Grout, use the `-local` variants:
 
 ```shell
-task build-local   # Build using local gabagool via go.work
+task build-arm64-local   # Build using local gabagool via go.work
 task all-local     # Build and package all platforms with local gabagool
 ```
 

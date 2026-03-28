@@ -1,4 +1,11 @@
-# Onion Platform Mappings
+# Onion
+
+## Quirks
+
+- **App not appearing after install**: After installing Grout for the first time, you may need to enter and exit any app or game before Grout shows up in the app list.
+- **Downloaded games not visible**: After downloading a game through Grout, you will need to refresh the roms list in Onion for it to appear.
+
+## Platform Mappings
 
 This table shows the mappings of RomM Fs Slug to Onion's platform folders.
 

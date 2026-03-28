@@ -64,7 +64,7 @@ Help keep CFW platform directory mappings current:
 - Follow existing code conventions and patterns
 - Test your changes locally before submitting
 - Update documentation if your changes affect user-facing behavior
-- Ensure the build passes (`task build` or `go build ./...`)
+- Ensure the build passes (`task build-arm64` or `go build ./...`)
 - Provide a clear description of what your PR does and why
 
 ## Code Style

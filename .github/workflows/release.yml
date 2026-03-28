@@ -85,7 +85,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build ARM64
-        run: task build extract
+        run: task build-arm64 extract-arm64
         env:
           GROUT_VERSION: ${{ needs.prepare.outputs.version }}
 
@@ -214,7 +214,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build ARM32
-        run: task build-32 extract-32
+        run: task build-arm32 extract-arm32
         env:
           GROUT_VERSION: ${{ needs.prepare.outputs.version }}
 
