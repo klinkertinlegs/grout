@@ -36,7 +36,8 @@ func DetectDevice() Device {
 		return DeviceAnbernic
 	}
 
-	// TrimUI (a133p), Miyoo Flip, and others use standard SDL controller input
+	// TODO discover if Miyoo Flip and Others are fine with standard config
+	// TrimUI (a133p), Miyoo Flip (potentially idk don't own one), and others use standard SDL controller input
 	return DeviceGeneric
 }
 
