@@ -84,13 +84,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build ARM64
-        run: task build-arm64 extract-arm64
+      - name: Build and extract ARM64
+        run: task build:arm64
         env:
           GROUT_VERSION: ${{ needs.prepare.outputs.version }}
 
       - name: Package ARM64 platforms
-        run: task package-next package-muos package-knulli package-spruce package-rocknix package-trimui package-minui package-batocera
+        run: task package:next package:muos package:knulli package:spruce package:rocknix package:trimui package:minui package:batocera
 
       - name: Create distributions
         run: |
@@ -135,13 +135,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build AMD64
-        run: task build-amd64 extract-amd64
+      - name: Build and extract AMD64
+        run: task build:amd64
         env:
           GROUT_VERSION: ${{ needs.prepare.outputs.version }}
 
       - name: Package Batocera AMD64
-        run: task package-batocera-amd64
+        run: task package:batocera-amd64
 
       - name: Create distribution
         run: |
@@ -174,13 +174,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build x86
-        run: task build-x86 extract-x86
+      - name: Build and extract x86
+        run: task build:x86
         env:
           GROUT_VERSION: ${{ needs.prepare.outputs.version }}
 
       - name: Package Batocera x86
-        run: task package-batocera-x86
+        run: task package:batocera-x86
 
       - name: Create distribution
         run: |
@@ -213,13 +213,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build ARM32
-        run: task build-arm32 extract-arm32
+      - name: Build and extract ARM32
+        run: task build:arm32
         env:
           GROUT_VERSION: ${{ needs.prepare.outputs.version }}
 
       - name: Package ARM32 platforms
-        run: task package-allium package-onion package-minui-arm32
+        run: task package:allium package:onion package:minui-arm32
 
       - name: Create distributions
         run: |
