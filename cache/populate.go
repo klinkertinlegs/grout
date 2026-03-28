@@ -18,7 +18,7 @@ const (
 type SyncStats struct {
 	Platforms         int
 	GamesUpdated      int
-	Collectionssynced int
+	CollectionsSynced int
 }
 
 func (cm *Manager) populateCache(platforms []romm.Platform, progress *atomic.Float64) (SyncStats, error) {
@@ -138,7 +138,7 @@ func (cm *Manager) populateCache(platforms []romm.Platform, progress *atomic.Flo
 	}
 
 	// Collections (85-98%)
-	stats.Collectionssynced = cm.fetchAndCacheCollectionsWithProgress(progress, 0.85, 0.98)
+	stats.CollectionsSynced = cm.fetchAndCacheCollectionsWithProgress(progress, 0.85, 0.98)
 
 	cm.RecordRefreshTime(MetaKeyCollectionsRefreshedAt)
 
