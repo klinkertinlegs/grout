@@ -84,9 +84,7 @@ func setupInputMapping(currentCFW cfw.CFW) {
 	case cfw.Onion:
 		mappingBytes, mappingErr = onion.GetInputMappingBytes()
 	case cfw.MinUI:
-		if environment.IsMiyoo() {
-			mappingBytes, mappingErr = minui.GetInputMappingBytes()
-		}
+		mappingBytes, mappingErr = minui.GetInputMappingBytes()
 	case cfw.Spruce:
 		mappingBytes, mappingErr = spruce.GetInputMappingBytes()
 	}

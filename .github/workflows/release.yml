@@ -90,7 +90,7 @@ jobs:
           GROUT_VERSION: ${{ needs.prepare.outputs.version }}
 
       - name: Package ARM64 platforms
-        run: task package:next package:muos package:knulli package:rocknix package:trimui package:minui package:batocera
+        run: task package:next package:muos package:knulli package:rocknix package:trimui package:batocera
 
       - name: Create distributions
         run: |
@@ -99,7 +99,6 @@ jobs:
           cd dist/Knulli && zip -r ../Grout-Knulli.zip Grout && cd ../..
           cd dist/ROCKNIX && zip -r ../Grout-ROCKNIX.zip Grout.sh Grout && cd ../..
           cd dist/Trimui && zip -r ../Grout-Trimui.zip Grout && cd ../..
-          cd dist/MinUI-arm64 && zip -r ../Grout-MinUI-arm64.zip Grout && cd ../..
           cd dist/Batocera-arm64 && zip -r ../Grout-Batocera-arm64.zip Grout.sh Grout && cd ../..
 
       - name: Upload artifacts
@@ -112,7 +111,6 @@ jobs:
             dist/Grout-Knulli.zip
             dist/Grout-ROCKNIX.zip
             dist/Grout-Trimui.zip
-            dist/Grout-MinUI-arm64.zip
             dist/Grout-Batocera-arm64.zip
             build64/grout
             build64/lib/**
@@ -218,13 +216,12 @@ jobs:
           GROUT_VERSION: ${{ needs.prepare.outputs.version }}
 
       - name: Package ARM32 platforms
-        run: task package:allium package:onion package:minui-arm32
+        run: task package:allium package:onion
 
       - name: Create distributions
         run: |
           cd dist/Allium && zip -r ../Grout-Allium.zip Grout.pak && cd ../..
           cd dist/Onion && zip -r ../Grout-Onion.zip Grout && cd ../..
-          cd dist/MinUI-arm32 && zip -r ../Grout-MinUI-arm32.zip Grout && cd ../..
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -233,7 +230,6 @@ jobs:
           path: |
             dist/Grout-Allium.zip
             dist/Grout-Onion.zip
-            dist/Grout-MinUI-arm32.zip
             build32/grout
   package-arm-universal:
     needs: [prepare, build-arm64, build-arm32]
@@ -256,11 +252,12 @@ jobs:
           merge-multiple: true
 
       - name: Package universal assets
-        run: task package:spruce
+        run: task package:spruce package:minui
 
       - name: Create distributions
         run: |
           cd dist/Spruce && zip -r Grout.spruce.zip Grout && mv Grout.spruce.zip ../Grout.spruce.zip && cd ../..
+          cd dist/MinUI && zip -r ../Grout-MinUI.zip Grout && cd ../..
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -268,6 +265,7 @@ jobs:
           name: arm-universal-artifacts
           path: |
             dist/Grout.spruce.zip
+            dist/Grout-MinUI.zip
 
   release:
     needs: [prepare, build-arm64, build-amd64, build-x86, build-arm32, package-arm-universal]
@@ -298,8 +296,7 @@ jobs:
             **/Grout-Knulli.zip
             **/Grout-ROCKNIX.zip
             **/Grout-Trimui.zip
-            **/Grout-MinUI-arm64.zip
-            **/Grout-MinUI-arm32.zip
+            **/Grout-MinUI.zip
             **/Grout-Batocera-arm64.zip
             **/Grout-Batocera-x86.zip
             **/Grout-Batocera-amd64.zip
@@ -375,8 +372,7 @@ jobs:
             "Grout-Trimui.zip"
             "Grout-Allium.zip"
             "Grout-Onion.zip"
-            "Grout-MinUI-arm64.zip"
-            "Grout-MinUI-arm32.zip"
+            "Grout-MinUI.zip"
             "Grout-Batocera-arm64.zip"
             "Grout-Batocera-amd64.zip"
             "Grout-Batocera-x86.zip"

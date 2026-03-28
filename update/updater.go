@@ -50,14 +50,7 @@ func GetDistributionAssetName(c cfw.CFW) string {
 	case cfw.Onion:
 		return "Grout-Onion.zip"
 	case cfw.MinUI:
-		switch runtime.GOARCH {
-		case "arm64":
-			return "Grout-MinUI-arm64.zip"
-		case "arm":
-			return "Grout-MinUI-arm32.zip"
-		default:
-			return ""
-		}
+		return "Grout-MinUI.zip"
 	case cfw.Batocera:
 		switch runtime.GOARCH {
 		case "arm64":

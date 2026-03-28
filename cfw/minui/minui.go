@@ -2,7 +2,6 @@ package minui
 
 import (
 	"embed"
-	"fmt"
 	"grout/internal/jsonutil"
 	"os"
 	"path/filepath"
@@ -10,9 +9,6 @@ import (
 
 //go:embed data/*.json
 var embeddedFiles embed.FS
-
-//go:embed input_mappings/*.json
-var embeddedInputMappings embed.FS
 
 var (
 	Platforms       = jsonutil.MustLoadJSONMap[string, []string](embeddedFiles, "data/platforms.json")
@@ -66,18 +62,3 @@ func RomFolderBase(path string, tagParser func(string) string) string {
 	return path
 }
 
-// GetInputMappingBytes returns the embedded input mapping JSON for Onion (Miyoo Mini/Mini+)
-func GetInputMappingBytes() ([]byte, error) {
-	filename := "input_mappings/miyoo.json"
-
-	overridePath := filepath.Join("overrides", "cfw", "onion", filename)
-	data, err := os.ReadFile(overridePath)
-	if err != nil {
-		data, err = embeddedInputMappings.ReadFile(filename)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read embedded input mapping %s: %w", filename, err)
-		}
-	}
-
-	return data, nil
-}
