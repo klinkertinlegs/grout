@@ -33,7 +33,8 @@
 ## Bug Fixes
 
 - Fixed data race in auto-update between background goroutine and UI thread
-- Fixed save directories for PSX and PSP on muOS - *first contribution by @klinkertinlegs*
+- Fixed save directories for PSX and PSP on muOS - @klinkertinlegs
+- Corrected muOS emulator save directory names across all platforms - @klinkertinlegs
 - Fixed Onion and Allium save directory mappings (#170)
 - Fixed image paths with special characters in EmulationStation artwork - @pawndev
 - Fixed Knulli continually restarting Grout when Quick Resume is enabled
