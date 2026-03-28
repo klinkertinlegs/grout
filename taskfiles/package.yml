@@ -41,11 +41,17 @@ tasks:
   spruce:
     cmds:
       - rm -rf dist/Spruce
-      - mkdir -p dist/Spruce/Grout/grout/lib
+      - mkdir -p dist/Spruce/Grout/grout/lib64
+      - mkdir -p dist/Spruce/Grout/grout/lib32/{miyoo,a30}
       - cp scripts/Spruce/* README.md LICENSE dist/Spruce/Grout
-      - cp build64/grout dist/Spruce/Grout/grout
-      - cp -R build64/lib/* dist/Spruce/Grout/grout/lib/
-      - chmod a+x dist/Spruce/Grout/grout/grout dist/Spruce/Grout/launch.sh dist/Spruce/Grout/launch-universal.sh
+      - cp build64/grout dist/Spruce/Grout/grout/grout64
+      - cp build32/grout dist/Spruce/Grout/grout/grout32
+      - cp -R build64/lib/* dist/Spruce/Grout/grout/lib64/
+      - cp -R vendored/miyoo/* dist/Spruce/Grout/grout/lib32/miyoo/
+#      - cp -R vendored/a30/* dist/Spruce/Grout/grout/lib32/a30/ # uncomment once we will be able to have a30 correct .so in the repo
+      - cp vendored/miyoo/libSDL2_ttf-2.0.so dist/Spruce/Grout/grout/lib32/a30/
+      - cp vendored/miyoo/libSDL2_ttf-2.0.so.0 dist/Spruce/Grout/grout/lib32/a30/
+      - chmod a+x dist/Spruce/Grout/grout/grout32 dist/Spruce/Grout/grout/grout64 dist/Spruce/Grout/launch.sh
     silent: true
 
   allium:

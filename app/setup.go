@@ -8,6 +8,7 @@ import (
 	"grout/cfw/minui"
 	"grout/cfw/muos"
 	"grout/cfw/onion"
+	"grout/cfw/spruce"
 	"grout/internal"
 	"grout/internal/environment"
 	"grout/internal/fileutil"
@@ -86,6 +87,8 @@ func setupInputMapping(currentCFW cfw.CFW) {
 		if environment.IsMiyoo() {
 			mappingBytes, mappingErr = minui.GetInputMappingBytes()
 		}
+	case cfw.Spruce:
+		mappingBytes, mappingErr = spruce.GetInputMappingBytes()
 	}
 
 	if mappingBytes != nil && mappingErr == nil {
@@ -99,12 +102,17 @@ func initFramework(currentCFW cfw.CFW) {
 	if preConfig, err := internal.LoadConfig(); err == nil {
 		gaba.SetFlipFaceButtons(preConfig.SwapFaceButtons)
 	}
+	orientation := gaba.OrientationNormal
+	if currentCFW == cfw.Spruce && spruce.DetectDevice() == spruce.DeviceA30 {
+		orientation = gaba.OrientationRotate270
+	}
 
 	gaba.Init(gaba.Options{
 		WindowTitle:          "Grout",
 		PrimaryThemeColorHex: 0x007C77,
 		ShowBackground:       true,
 		IsNextUI:             currentCFW == cfw.NextUI,
+		DisplayOrientation:   orientation,
 	})
 
 	gaba.RegisterChord("unlock-kid-mode", []buttons.VirtualButton{
