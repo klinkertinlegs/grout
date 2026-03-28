@@ -11,7 +11,6 @@ const (
 
 	endpointRoms           = "/api/roms"
 	endpointRomByID        = "/api/roms/%d"
-	endpointRomsDownload   = "/api/roms/download"
 	endpointRomsByHash     = "/api/roms/by-hash"
 	endpointRomIdentifiers = "/api/roms/identifiers"
 

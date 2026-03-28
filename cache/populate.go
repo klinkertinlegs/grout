@@ -108,37 +108,29 @@ func (cm *Manager) populateCache(platforms []romm.Platform, progress *atomic.Flo
 		}
 	}
 
-	// Fetch all games in bulk (in goroutine so UI can update)
-	var wg sync.WaitGroup
 	var firstErr error
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, p := range platforms {
-			count, err := cm.fetchPlatformGames(p, &fetchOpts{
-				client:       client,
-				onProgress:   updateProgress,
-				updatedAfter: updatedAfter,
-			})
+	for _, p := range platforms {
+		count, err := cm.fetchPlatformGames(p, &fetchOpts{
+			client:       client,
+			onProgress:   updateProgress,
+			updatedAfter: updatedAfter,
+		})
 
-			if err != nil {
-				logger.Error("Failed to fetch/save platform games", "platformID", p.ID, "error", err)
-				cm.RecordPlatformSyncFailure(p.ID)
-				if firstErr == nil {
-					firstErr = err
-				}
-			} else {
-				cm.RecordPlatformSyncSuccess(p.ID, count)
+		if err != nil {
+			logger.Error("Failed to fetch/save platform games", "platformID", p.ID, "error", err)
+			cm.RecordPlatformSyncFailure(p.ID)
+			if firstErr == nil {
+				firstErr = err
 			}
-
-			// Aggressively free memory after saving each platform
-			// Prevents OOM crashes on 128MB devices
-			runtime.GC()
+		} else {
+			cm.RecordPlatformSyncSuccess(p.ID, count)
 		}
-	}()
 
-	wg.Wait()
+		// Aggressively free memory after saving each platform
+		// Prevents OOM crashes on 128MB devices
+		runtime.GC()
+	}
 
 	// Record refresh time
 	if firstErr == nil {
@@ -241,53 +233,6 @@ func (cm *Manager) fetchPlatformGames(platform romm.Platform, opts *fetchOpts) (
 	}
 
 	return len(allGames), cm.SavePlatformGames(platform.ID, allGames)
-}
-
-// fetchAllGames fetches all games from the API in bulk (without platform filter)
-func (cm *Manager) fetchAllGames(client *romm.Client, updatedAfter string, onProgress func(count int)) ([]romm.Rom, error) {
-	logger := gaba.GetLogger()
-
-	if client == nil {
-		client = romm.NewClientFromHost(cm.host, cm.config.GetApiTimeout())
-	}
-
-	var allGames []romm.Rom
-	offset := 0
-	expectedTotal := 0
-
-	for {
-		q := romm.GetRomsQuery{
-			Offset:       offset,
-			Limit:        DefaultRomPageSize,
-			UpdatedAfter: updatedAfter,
-		}
-
-		res, err := client.GetRoms(q)
-		if err != nil {
-			logger.Error("Failed to fetch games", "offset", offset, "error", err)
-			return allGames, err
-		}
-
-		if offset == 0 {
-			expectedTotal = res.Total
-			logger.Debug("Fetching all games", "total", expectedTotal)
-		}
-
-		allGames = append(allGames, res.Items...)
-
-		if onProgress != nil && len(res.Items) > 0 {
-			onProgress(len(res.Items))
-		}
-
-		if len(allGames) >= expectedTotal || len(res.Items) == 0 || len(res.Items) < DefaultRomPageSize {
-			break
-		}
-
-		offset += len(res.Items)
-	}
-
-	logger.Debug("Fetched all games", "count", len(allGames))
-	return allGames, nil
 }
 
 func (cm *Manager) fetchAndCacheCollectionsWithProgress(progress *atomic.Float64, progressStart, progressEnd float64) int {

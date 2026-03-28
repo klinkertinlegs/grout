@@ -12,7 +12,6 @@ import (
 	"time"
 
 	gaba "github.com/BrandonKowalski/gabagool/v2/pkg/gabagool"
-	"github.com/sonh/qs"
 )
 
 const (
@@ -152,14 +151,6 @@ func (q GetRomByHashQuery) Valid() bool {
 	return q.CrcHash != "" || q.Md5Hash != "" || q.Sha1Hash != ""
 }
 
-type DownloadRomsQuery struct {
-	RomIDs string `qs:"rom_ids"`
-}
-
-func (q DownloadRomsQuery) Valid() bool {
-	return q.RomIDs != ""
-}
-
 func (c *Client) GetRoms(query GetRomsQuery) (PaginatedRoms, error) {
 	var result PaginatedRoms
 	err := c.doRequest("GET", endpointRoms, query, nil, &result)
@@ -182,29 +173,6 @@ func (c *Client) GetRom(id int) (Rom, error) {
 	err := c.doRequest("GET", path, nil, nil, &rom)
 	return rom, err
 }
-func (c *Client) DownloadRoms(romIDs []int) ([]byte, error) {
-	if len(romIDs) == 0 {
-		return c.doRequestRaw("GET", endpointRomsDownload, nil)
-	}
-
-	ids := ""
-	for i, id := range romIDs {
-		if i > 0 {
-			ids += ","
-		}
-		ids += strconv.Itoa(id)
-	}
-
-	query := DownloadRomsQuery{RomIDs: ids}
-	values, err := qs.NewEncoder().Values(query)
-	if err != nil {
-		return nil, err
-	}
-
-	path := endpointRomsDownload + "?" + values.Encode()
-	return c.doRequestRaw("GET", path, nil)
-}
-
 func joinPathWithQuery(base string, elem ...string) (string, error) {
 	last := elem[len(elem)-1]
 	// because url.JoinPath doesn't handle query parameters without encoding all the string
@@ -219,12 +187,36 @@ func joinPathWithQuery(base string, elem ...string) (string, error) {
 	return url.JoinPath(base, elem...)
 }
 
-func (r Rom) GetGamePage(host Host) string {
+// resolveAssetURL resolves a RomM asset path or fallback URL into a full URL.
+// If path is set, it joins it with the host URL (prepending the asset prefix if needed).
+// If path is empty, it falls back to fallbackURL.
+func resolveAssetURL(host Host, path, fallbackURL string) string {
+	if path != "" {
+		var result string
+		var err error
+		if !strings.Contains(path, RommAssetPrefix) {
+			result, err = joinPathWithQuery(host.URL(), RommAssetPrefix, path)
+		} else {
+			result, err = joinPathWithQuery(host.URL(), path)
+		}
+		if err != nil {
+			gaba.GetLogger().Error("Error resolving asset URL", "error", err, "hostURL", host.ToLoggable(), "path", path)
+			return ""
+		}
+		return strings.ReplaceAll(result, " ", "%20")
+	}
+	if fallbackURL != "" {
+		return strings.ReplaceAll(fallbackURL, " ", "%20")
+	}
+	return ""
+}
+
+func (r *Rom) GetGamePage(host Host) string {
 	u, _ := url.JoinPath(host.URL(), "rom", strconv.Itoa(r.ID))
 	return u
 }
 
-func (r Rom) GetLocalPath(resolver PlatformDirResolver) string {
+func (r *Rom) GetLocalPath(resolver PlatformDirResolver) string {
 	if r.PlatformFSSlug == "" {
 		return ""
 	}
@@ -246,7 +238,7 @@ func (r Rom) GetLocalPath(resolver PlatformDirResolver) string {
 	return ""
 }
 
-func (r Rom) IsDownloaded(resolver PlatformDirResolver) bool {
+func (r *Rom) IsDownloaded(resolver PlatformDirResolver) bool {
 	if r.PlatformFSSlug == "" {
 		return false
 	}
@@ -275,7 +267,7 @@ func (r Rom) IsDownloaded(resolver PlatformDirResolver) bool {
 	return false
 }
 
-func (r Rom) IsFileDownloaded(resolver PlatformDirResolver, fileName string) bool {
+func (r *Rom) IsFileDownloaded(resolver PlatformDirResolver, fileName string) bool {
 	if r.PlatformFSSlug == "" {
 		return false
 	}
@@ -290,7 +282,7 @@ func (r Rom) IsFileDownloaded(resolver PlatformDirResolver, fileName string) boo
 	return fileutil.FileExists(filePath)
 }
 
-func (r Rom) MaxPlayerCount() int {
+func (r *Rom) MaxPlayerCount() int {
 	maxPlayers := 1
 	if r.Metadatum.GameModes != nil && len(r.Metadatum.GameModes) > 0 {
 		if slices.Contains(r.Metadatum.GameModes, "Multiplayer") {
@@ -304,7 +296,7 @@ func (r Rom) MaxPlayerCount() int {
 	return maxPlayers
 }
 
-func (r Rom) GetArtworkURL(kind artutil.ArtKind, host Host) string {
+func (r *Rom) GetArtworkURL(kind artutil.ArtKind, host Host) string {
 	var (
 		coverURL string
 		boxPath  string
@@ -365,7 +357,7 @@ func (r Rom) GetArtworkURL(kind artutil.ArtKind, host Host) string {
 	return strings.ReplaceAll(coverURL, " ", "%20")
 }
 
-func (r Rom) GetScreenshotURL(host Host) string {
+func (r *Rom) GetScreenshotURL(host Host) string {
 	var screenshotURL string
 	var err error
 	logger := gaba.GetLogger()
@@ -384,174 +376,46 @@ func (r Rom) GetScreenshotURL(host Host) string {
 	return strings.ReplaceAll(screenshotURL, " ", "%20")
 }
 
-func (r Rom) GetSplashArtURL(kind artutil.ArtKind, host Host) string {
-	var err error
-	splashArtURL := ""
-	if kind == artutil.ArtKindMarquee {
-		if r.ScreenScraperMetadata.MarqueePath != "" {
-			if !strings.Contains(r.ScreenScraperMetadata.MarqueePath, RommAssetPrefix) {
-				splashArtURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.MarqueePath)
-			} else {
-				splashArtURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.MarqueePath)
-			}
-		} else if r.ScreenScraperMetadata.MarqueeURL != "" {
-			splashArtURL = r.ScreenScraperMetadata.MarqueeURL
-		}
-	} else if kind == artutil.ArtKindTitle && r.ScreenScraperMetadata.TitleScreenURL != "" {
-		splashArtURL = r.ScreenScraperMetadata.TitleScreenURL
+func (r *Rom) GetSplashArtURL(kind artutil.ArtKind, host Host) string {
+	switch kind {
+	case artutil.ArtKindMarquee:
+		return resolveAssetURL(host, r.ScreenScraperMetadata.MarqueePath, r.ScreenScraperMetadata.MarqueeURL)
+	case artutil.ArtKindTitle:
+		return resolveAssetURL(host, "", r.ScreenScraperMetadata.TitleScreenURL)
+	default:
+		return ""
 	}
-
-	if splashArtURL == "" && err != nil {
-		logger := gaba.GetLogger()
-		logger.Error("Error joining host URL with marquee path", "error", err, "hostURL", host.ToLoggable(), "marqueePath", r.ScreenScraperMetadata.MarqueePath)
-	}
-
-	return strings.ReplaceAll(splashArtURL, " ", "%20")
 }
 
-func (r Rom) GetMarqueeURL(host Host) string {
-	var err error
-	marqueeURL := ""
-	if r.ScreenScraperMetadata.MarqueePath != "" {
-		if !strings.Contains(r.ScreenScraperMetadata.MarqueePath, RommAssetPrefix) {
-			marqueeURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.MarqueePath)
-		} else {
-			marqueeURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.MarqueePath)
-		}
-		if err != nil {
-			gaba.GetLogger().Error("Error joining host URL with marquee path", "error", err, "hostURL", host.ToLoggable(), "marqueePath", r.ScreenScraperMetadata.MarqueePath)
-			return ""
-		}
-		return marqueeURL
-	} else if r.ScreenScraperMetadata.MarqueeURL != "" {
-		return r.ScreenScraperMetadata.MarqueeURL
-	}
-	return ""
+func (r *Rom) GetMarqueeURL(host Host) string {
+	return resolveAssetURL(host, r.ScreenScraperMetadata.MarqueePath, r.ScreenScraperMetadata.MarqueeURL)
 }
 
-func (r Rom) GetLogoURL(host Host) string {
-	var err error
-	logoURL := ""
-	if r.ScreenScraperMetadata.LogoPath != "" {
-		if !strings.Contains(r.ScreenScraperMetadata.LogoPath, RommAssetPrefix) {
-			logoURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.LogoPath)
-		} else {
-			logoURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.LogoPath)
-		}
-		if err != nil {
-			gaba.GetLogger().Error("Error joining host URL with logo path", "error", err, "hostURL", host.ToLoggable(), "logoPath", r.ScreenScraperMetadata.LogoPath)
-			return ""
-		}
-		return logoURL
-	} else if r.ScreenScraperMetadata.LogoURL != "" {
-		return r.ScreenScraperMetadata.LogoURL
-	}
-	return ""
+func (r *Rom) GetLogoURL(host Host) string {
+	return resolveAssetURL(host, r.ScreenScraperMetadata.LogoPath, r.ScreenScraperMetadata.LogoURL)
 }
 
-func (r Rom) GetVideoURL(host Host) string {
-	var err error
-	videoURL := ""
-	if r.ScreenScraperMetadata.VideoPath != "" {
-		if !strings.Contains(r.ScreenScraperMetadata.VideoPath, RommAssetPrefix) {
-			videoURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.VideoPath)
-		} else {
-			videoURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.VideoPath)
-		}
-		if err != nil {
-			gaba.GetLogger().Error("Error joining host URL with video path", "error", err, "hostURL", host.ToLoggable(), "videoPath", r.ScreenScraperMetadata.VideoPath)
-			return ""
-		}
-		return videoURL
-	} else if r.ScreenScraperMetadata.VideoURL != "" {
-		return r.ScreenScraperMetadata.VideoURL
-	}
-	return ""
+func (r *Rom) GetVideoURL(host Host) string {
+	return resolveAssetURL(host, r.ScreenScraperMetadata.VideoPath, r.ScreenScraperMetadata.VideoURL)
 }
 
-func (r Rom) GetBezelURL(host Host) string {
-	var err error
-	bezelURL := ""
-	if r.ScreenScraperMetadata.BezelPath != "" {
-		if !strings.Contains(r.ScreenScraperMetadata.BezelPath, RommAssetPrefix) {
-			bezelURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.BezelPath)
-		} else {
-			bezelURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.BezelPath)
-		}
-		if err != nil {
-			gaba.GetLogger().Error("Error joining host URL with bezel path", "error", err, "hostURL", host.ToLoggable(), "bezelPath", r.ScreenScraperMetadata.BezelPath)
-			return ""
-		}
-		return bezelURL
-	} else if r.ScreenScraperMetadata.BezelURL != "" {
-		return r.ScreenScraperMetadata.BezelURL
-	}
-	return ""
+func (r *Rom) GetBezelURL(host Host) string {
+	return resolveAssetURL(host, r.ScreenScraperMetadata.BezelPath, r.ScreenScraperMetadata.BezelURL)
 }
 
-func (r Rom) GetManualURL(host Host) string {
-	manualURL := ""
-	var err error
-	if r.PathManual != "" && r.HasManual {
-		if !strings.Contains(r.PathManual, RommAssetPrefix) {
-			manualURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.PathManual)
-		} else {
-			manualURL, err = joinPathWithQuery(host.URL(), r.PathManual)
+func (r *Rom) GetManualURL(host Host) string {
+	if r.HasManual {
+		if result := resolveAssetURL(host, r.PathManual, r.URLManual); result != "" {
+			return result
 		}
-		if err != nil {
-			gaba.GetLogger().Error("Error joining host URL with manual path", "error", err, "hostURL", host.ToLoggable(), "manualPath", r.PathManual)
-			return ""
-		}
-		return manualURL
-	} else if r.URLManual != "" {
-		return r.URLManual
 	}
-
-	if r.ScreenScraperMetadata.ManualURL != "" {
-		return r.ScreenScraperMetadata.ManualURL
-	}
-
-	return ""
+	return resolveAssetURL(host, "", r.ScreenScraperMetadata.ManualURL)
 }
 
-func (r Rom) GetBoxbackURL(host Host) string {
-	var err error
-	boxbackURL := ""
-	if r.ScreenScraperMetadata.Box2DBackPath != "" {
-		if !strings.Contains(r.ScreenScraperMetadata.Box2DBackPath, RommAssetPrefix) {
-			boxbackURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.Box2DBackPath)
-		} else {
-			boxbackURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.Box2DBackPath)
-		}
-		if err != nil {
-			gaba.GetLogger().Error("Error joining host URL with boxback path", "error", err, "hostURL", host.ToLoggable(), "boxbackPath", r.ScreenScraperMetadata.Box2DBackPath)
-			return ""
-		}
-		return boxbackURL
-	} else if r.ScreenScraperMetadata.Box2DBackURL != "" {
-		return r.ScreenScraperMetadata.Box2DBackURL
-	}
-
-	return ""
+func (r *Rom) GetBoxbackURL(host Host) string {
+	return resolveAssetURL(host, r.ScreenScraperMetadata.Box2DBackPath, r.ScreenScraperMetadata.Box2DBackURL)
 }
 
-func (r Rom) GetFanartURL(host Host) string {
-	var err error
-	fanartURL := ""
-	if r.ScreenScraperMetadata.FanartPath != "" {
-		if !strings.Contains(r.ScreenScraperMetadata.FanartPath, RommAssetPrefix) {
-			fanartURL, err = joinPathWithQuery(host.URL(), RommAssetPrefix, r.ScreenScraperMetadata.FanartPath)
-		} else {
-			fanartURL, err = joinPathWithQuery(host.URL(), r.ScreenScraperMetadata.FanartPath)
-		}
-		if err != nil {
-			gaba.GetLogger().Error("Error joining host URL with fanart path", "error", err, "hostURL", host.ToLoggable(), "fanartPath", r.ScreenScraperMetadata.FanartPath)
-			return ""
-		}
-		return fanartURL
-	} else if r.ScreenScraperMetadata.FanartURL != "" {
-		return r.ScreenScraperMetadata.FanartURL
-	}
-
-	return ""
+func (r *Rom) GetFanartURL(host Host) string {
+	return resolveAssetURL(host, r.ScreenScraperMetadata.FanartPath, r.ScreenScraperMetadata.FanartURL)
 }
