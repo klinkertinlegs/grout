@@ -66,135 +66,135 @@
     }
   },
   "beta": {
-    "version": "v4.8.0.1-beta.7",
-    "notes": "Potential fix for Anbernic button mapping detection on MinUI using reported CPU name. No idea if this will work in practice.",
+    "version": "v4.8.0.1-beta.8",
+    "notes": "Updated Anbernic input mappings for MinUI. Thanks @ klinkertinlegs",
     "assets": {
       "Grout.pak.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout.pak.zip",
-        "size": 23608965,
-        "sha256": "19662fcc29f8f7ac70ab43c4fc225da68fd915220f3ed6f9b7919a4a042f99a4"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout.pak.zip",
+        "size": 23609441,
+        "sha256": "ca512f77cd3cf70433f853f178c37e401f14d5208a0581955334e24c1d36aa6c"
       },
       "Grout.muxapp": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout.muxapp",
-        "size": 23609222,
-        "sha256": "f0ac96bd956716ba6fd74a78018f9c65a7c31639e9230999fe8e3128aafbf0d5"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout.muxapp",
+        "size": 23609698,
+        "sha256": "b41e35ff9b75c9d94cf168651c378a5a08d441fa7627e7fe32e7bf680582b593"
       },
       "Grout-Knulli.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Knulli.zip",
-        "size": 23647048,
-        "sha256": "1c9545d9ae18bbb48606c5ef8df9e983d3cbba0812ab3f379471198b33abad0d"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Knulli.zip",
+        "size": 23647524,
+        "sha256": "7d37a10c63d995eae8e2d68b594d493d5dafd7424d272147e116ed8d8fa517ae"
       },
       "Grout.spruce.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout.spruce.zip",
-        "size": 59960145,
-        "sha256": "8f581b69bb4193c0a026008b8a4b01eecda4185b9f1d59dc16794d0baf88b14c"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout.spruce.zip",
+        "size": 59960513,
+        "sha256": "ebb78295b81e1587a7981537e6ef169e43fa92657540e7352f5949c7e3c44eec"
       },
       "Grout-ROCKNIX.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-ROCKNIX.zip",
-        "size": 23647045,
-        "sha256": "dc7cb12772424c17a66542ff21d30ee385aaf63711d14a8cfce7e290d2756d06"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-ROCKNIX.zip",
+        "size": 23647521,
+        "sha256": "cb39ff30e42161043b334775e781900b3d8b1314080f18ba9f9f49607bdce97b"
       },
       "Grout-Trimui.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Trimui.zip",
-        "size": 23621030,
-        "sha256": "d8a18071fde1928d1b7a85515b8e87dff4b047c581eacfe604255d133e664355"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Trimui.zip",
+        "size": 23621506,
+        "sha256": "c977ffa4e8445d0063c0b8e83560673e18e6b636c8ea4281fb226f9e55568a45"
       },
       "Grout-Allium.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Allium.zip",
-        "size": 35528567,
-        "sha256": "b112ef6de687c8e10bee48dd6b38a6f03816c9cb42389507909ad222515133d0"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Allium.zip",
+        "size": 35528459,
+        "sha256": "378130fed68f7d2000120ec35ff021065889a7c3acdd7ae6e8c4108873f3012f"
       },
       "Grout-Onion.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Onion.zip",
-        "size": 35528370,
-        "sha256": "99f7f8f1e7a02a29ce1d15c69e93720b9a5cba7824ecb119111d818a6fa42bad"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Onion.zip",
+        "size": 35528262,
+        "sha256": "ef138216a86d4f6acca2f6ea03ee459dfc268b9916c304a5260fa4a9bf37c7be"
       },
       "Grout-MinUI.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-MinUI.zip",
-        "size": 59124825,
-        "sha256": "765f87f33398aad960c7ee392292f217e07982791ee983aafaa15a1ff3c93b9a"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-MinUI.zip",
+        "size": 59125193,
+        "sha256": "32d116ce2f51ad613b20030d79d6a0742992c34a14694eaad4e3102f0f06cf6b"
       },
       "Grout-Batocera-arm64.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Batocera-arm64.zip",
-        "size": 23607858,
-        "sha256": "0d4e74e88598137a3db99f57276cd8327cf51ee937b68a90d44e1a59ce6cce66"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Batocera-arm64.zip",
+        "size": 23608334,
+        "sha256": "f0333a532ea7f800fb07a55dba94692c3def080652ee0ccb9c7914b71688cc27"
       },
       "Grout-Batocera-amd64.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Batocera-amd64.zip",
-        "size": 24685230,
-        "sha256": "79c5dd7857f0c860fa991ab8f604b186368211f155cac79ab8c4781f69797aaa"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Batocera-amd64.zip",
+        "size": 24685495,
+        "sha256": "8435db2415f160bb2ab763c004d3c40e1db6b18ef29de9d829f0cfed6006a1c4"
       },
       "Grout-Batocera-x86.zip": {
-        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Batocera-x86.zip",
-        "size": 24347874,
-        "sha256": "c526a4e6aba42bc47c4fcb892ddd9e515f0ff3e8cb4c26e24be6847bfb4ad9c1"
+        "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Batocera-x86.zip",
+        "size": 24348051,
+        "sha256": "a0facb7df09dd97de79fc50d1f9f57f24b47ac77c0959bfca04b9553725f18fe"
       }
     }
   },
   "romm": {
     "4.8.0": {
-      "version": "v4.8.0.1-beta.7",
-      "notes": "Potential fix for Anbernic button mapping detection on MinUI using reported CPU name. No idea if this will work in practice.",
+      "version": "v4.8.0.1-beta.8",
+      "notes": "Updated Anbernic input mappings for MinUI. Thanks @ klinkertinlegs",
       "assets": {
         "Grout.pak.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout.pak.zip",
-          "size": 23608965,
-          "sha256": "19662fcc29f8f7ac70ab43c4fc225da68fd915220f3ed6f9b7919a4a042f99a4"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout.pak.zip",
+          "size": 23609441,
+          "sha256": "ca512f77cd3cf70433f853f178c37e401f14d5208a0581955334e24c1d36aa6c"
         },
         "Grout.muxapp": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout.muxapp",
-          "size": 23609222,
-          "sha256": "f0ac96bd956716ba6fd74a78018f9c65a7c31639e9230999fe8e3128aafbf0d5"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout.muxapp",
+          "size": 23609698,
+          "sha256": "b41e35ff9b75c9d94cf168651c378a5a08d441fa7627e7fe32e7bf680582b593"
         },
         "Grout-Knulli.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Knulli.zip",
-          "size": 23647048,
-          "sha256": "1c9545d9ae18bbb48606c5ef8df9e983d3cbba0812ab3f379471198b33abad0d"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Knulli.zip",
+          "size": 23647524,
+          "sha256": "7d37a10c63d995eae8e2d68b594d493d5dafd7424d272147e116ed8d8fa517ae"
         },
         "Grout.spruce.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout.spruce.zip",
-          "size": 59960145,
-          "sha256": "8f581b69bb4193c0a026008b8a4b01eecda4185b9f1d59dc16794d0baf88b14c"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout.spruce.zip",
+          "size": 59960513,
+          "sha256": "ebb78295b81e1587a7981537e6ef169e43fa92657540e7352f5949c7e3c44eec"
         },
         "Grout-ROCKNIX.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-ROCKNIX.zip",
-          "size": 23647045,
-          "sha256": "dc7cb12772424c17a66542ff21d30ee385aaf63711d14a8cfce7e290d2756d06"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-ROCKNIX.zip",
+          "size": 23647521,
+          "sha256": "cb39ff30e42161043b334775e781900b3d8b1314080f18ba9f9f49607bdce97b"
         },
         "Grout-Trimui.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Trimui.zip",
-          "size": 23621030,
-          "sha256": "d8a18071fde1928d1b7a85515b8e87dff4b047c581eacfe604255d133e664355"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Trimui.zip",
+          "size": 23621506,
+          "sha256": "c977ffa4e8445d0063c0b8e83560673e18e6b636c8ea4281fb226f9e55568a45"
         },
         "Grout-Allium.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Allium.zip",
-          "size": 35528567,
-          "sha256": "b112ef6de687c8e10bee48dd6b38a6f03816c9cb42389507909ad222515133d0"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Allium.zip",
+          "size": 35528459,
+          "sha256": "378130fed68f7d2000120ec35ff021065889a7c3acdd7ae6e8c4108873f3012f"
         },
         "Grout-Onion.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Onion.zip",
-          "size": 35528370,
-          "sha256": "99f7f8f1e7a02a29ce1d15c69e93720b9a5cba7824ecb119111d818a6fa42bad"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Onion.zip",
+          "size": 35528262,
+          "sha256": "ef138216a86d4f6acca2f6ea03ee459dfc268b9916c304a5260fa4a9bf37c7be"
         },
         "Grout-MinUI.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-MinUI.zip",
-          "size": 59124825,
-          "sha256": "765f87f33398aad960c7ee392292f217e07982791ee983aafaa15a1ff3c93b9a"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-MinUI.zip",
+          "size": 59125193,
+          "sha256": "32d116ce2f51ad613b20030d79d6a0742992c34a14694eaad4e3102f0f06cf6b"
         },
         "Grout-Batocera-arm64.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Batocera-arm64.zip",
-          "size": 23607858,
-          "sha256": "0d4e74e88598137a3db99f57276cd8327cf51ee937b68a90d44e1a59ce6cce66"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Batocera-arm64.zip",
+          "size": 23608334,
+          "sha256": "f0333a532ea7f800fb07a55dba94692c3def080652ee0ccb9c7914b71688cc27"
         },
         "Grout-Batocera-amd64.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Batocera-amd64.zip",
-          "size": 24685230,
-          "sha256": "79c5dd7857f0c860fa991ab8f604b186368211f155cac79ab8c4781f69797aaa"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Batocera-amd64.zip",
+          "size": 24685495,
+          "sha256": "8435db2415f160bb2ab763c004d3c40e1db6b18ef29de9d829f0cfed6006a1c4"
         },
         "Grout-Batocera-x86.zip": {
-          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.7/Grout-Batocera-x86.zip",
-          "size": 24347874,
-          "sha256": "c526a4e6aba42bc47c4fcb892ddd9e515f0ff3e8cb4c26e24be6847bfb4ad9c1"
+          "url": "https://github.com/rommapp/grout/releases/download/v4.8.0.1-beta.8/Grout-Batocera-x86.zip",
+          "size": 24348051,
+          "sha256": "a0facb7df09dd97de79fc50d1f9f57f24b47ac77c0959bfca04b9553725f18fe"
         }
       }
     }
