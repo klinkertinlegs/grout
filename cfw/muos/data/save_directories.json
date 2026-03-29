@@ -89,14 +89,14 @@
     "file/PrBoom"
   ],
   "dos": [
-    "file/DOSBox-Pure"
+    "file/DOSBox-pure"
   ],
   "fairchild-channel-f": [
     "file/FreeChaF"
   ],
   "famicom": [
     "file/FCEUmm",
-    "file/BNES",
+    "file/bnes",
     "file/Mesen",
     "file/Nestopia",
     "file/QuickNES"
@@ -110,7 +110,7 @@
     "file/Handheld Electronic"
   ],
   "galaksija": [
-    "file/Galaksija"
+    "file/galaksija"
   ],
   "gamegear": [
     "file/PicoDrive",
@@ -120,7 +120,7 @@
   "gb": [
     "file/Gambatte",
     "file/DoubleCherryGB",
-    "file/FixGB",
+    "file/fixGB",
     "file/Gearboy",
     "file/mGBA",
     "file/SameBoy",
@@ -133,7 +133,7 @@
     "file/mGBA",
     "file/Beetle GBA",
     "file/VBA-M",
-    "file/VBA-Next"
+    "file/VBA Next"
   ],
   "gbc": [
     "file/Gambatte",
@@ -225,7 +225,7 @@
   ],
   "nes": [
     "file/FCEUmm",
-    "file/BNES",
+    "file/bnes",
     "file/Mesen",
     "file/Nestopia",
     "file/QuickNES"
@@ -254,7 +254,7 @@
     "file/Beetle PC-FX"
   ],
   "philips-cd-i": [
-    "file/SAME CDi"
+    "file/SAME_CDi"
   ],
   "pico": [
     "file/PicoDrive",
@@ -284,17 +284,17 @@
     "file/TyrQuake"
   ],
   "rpg-maker": [
-    "file/EasyRPG"
+    "file/EasyRPG Player"
   ],
   "saturn": [
-    "file/YabaSanshiro (External)",
+    "file/YabaSanshiro-Ext",
     "file/Beetle Saturn",
     "file/YabaSanshiro",
     "file/YabaSanshiro (External - No BIOS)",
     "file/Yabause"
   ],
   "scummvm": [
-    "file/ScummVM (External)",
+    "file/ScummVM-Ext",
     "file/ScummVM"
   ],
   "sega32": [
@@ -307,11 +307,11 @@
   ],
   "sfam": [
     "file/Snes9x",
-    "file/Beetle Supafaust",
-    "file/BSNES",
-    "file/BSNES 2014 Performance",
-    "file/BSNES C++98",
-    "file/BSNES Mercury",
+    "file/Supafaust",
+    "file/bsnes",
+    "file/bsnes2014",
+    "file/bsnes-mercury",
+    "file/bSNES",
     "file/ChimeraSNES",
     "file/Mesen-S",
     "file/Snes9x 2002",
@@ -336,11 +336,11 @@
   ],
   "snes": [
     "file/Snes9x",
-    "file/Beetle Supafaust",
-    "file/BSNES",
-    "file/BSNES 2014 Performance",
-    "file/BSNES C++98",
-    "file/BSNES Mercury",
+    "file/Supafaust",
+    "file/bsnes",
+    "file/bsnes2014",
+    "file/bsnes-mercury",    
+    "file/bSNES",
     "file/ChimeraSNES",
     "file/Mesen-S",
     "file/Snes9x 2002",
