@@ -8,6 +8,8 @@ Grout has been tested on the following devices running MinUI:
 
 | Manufacturer | Device      |
 |--------------|-------------|
+| Anbernic     | RG 35xxsp   |
+| Anbernic     | RG CubeXX   |
 | Miyoo        | A30         |
 | Miyoo        | Mini Plus   |
 | Miyoo        | Flip V2     |
