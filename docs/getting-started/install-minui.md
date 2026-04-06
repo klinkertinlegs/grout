@@ -13,6 +13,7 @@ Grout has been tested on the following devices running MinUI:
 | Miyoo        | Flip V2     |
 | Miyoo        | Mini Flip   |
 | Magicx       | Mini Zero28 |
+| Powkiddy     | RGB30       |
 | Trimui       | Smart Pro   |
 | Trimui       | Brick       |
 
