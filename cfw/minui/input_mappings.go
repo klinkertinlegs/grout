@@ -60,8 +60,6 @@ func DetectDevice() Device {
 		return DeviceZero28
 	}
 
-	// TODO discover if Miyoo Flip and Others are fine with standard config
-	// Miyoo Flip (potentially idk don't own one), and others use standard SDL controller input
 	return DeviceGeneric
 }
 
