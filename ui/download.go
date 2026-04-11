@@ -395,9 +395,13 @@ func (s *DownloadScreen) buildDownloads(config internal.Config, host romm.Host, 
 		if config.DownloadArt && (g.PathCoverLarge != "" || g.PathCoverSmall != "" || g.URLCover != "") {
 			// Prepare download for cover art
 			artDir := config.GetArtDirectory(gamePlatform)
-			artFileName := g.FsNameNoExt + ".png"
+			var artFileName string
+			if cfw.GetCFW() == cfw.MinUI && len(g.Files) > 0 {
+				artFileName = g.Files[0].FileName + ".png"
+			} else {
+				artFileName = g.FsNameNoExt + ".png"
+			}
 			artLocation := filepath.Join(artDir, artFileName)
-
 			coverURL := g.GetArtworkURL(config.ArtKind, host)
 			gamelistRomEntry.ArtLocation.ImagePath = artLocation
 
