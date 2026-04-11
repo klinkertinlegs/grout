@@ -241,7 +241,7 @@ func (s *DownloadScreen) draw(input DownloadInput) (DownloadOutput, error) {
 					var cleanName string
 					var gameFolder string
 
-					if input.Config.SubfolderPerGame {
+					if input.Config.SubfolderPerGame && cfw.GetCFW() == cfw.MinUI {
 						tag := extractPlatformTag(romDirectory)
 						cleanName = stripParentheses(g.FsNameNoExt)
 						gameFolder = fmt.Sprintf("%s (%s)", cleanName, tag)
