@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"grout/cfw"
 	"grout/cfw/muos"
+	"grout/cfw/minui"
 	"grout/internal"
 	"grout/internal/artutil"
 	"grout/internal/fileutil"
@@ -19,6 +20,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -234,7 +236,21 @@ func (s *DownloadScreen) draw(input DownloadInput) (DownloadOutput, error) {
 				ext := strings.ToLower(filepath.Ext(g.Files[0].FileName))
 				if ext == ".zip" || ext == ".7z" {
 					romDirectory := input.Config.GetPlatformRomDirectory(gamePlatform)
-					archivePath := filepath.Join(romDirectory, g.Files[0].FileName)
+					var archivePath string
+					var extractDir string
+					var cleanName string
+					var gameFolder string
+
+					if input.Config.SubfolderPerGame {
+						tag := extractPlatformTag(romDirectory)
+						cleanName = stripParentheses(g.FsNameNoExt)
+						gameFolder = fmt.Sprintf("%s (%s)", cleanName, tag)
+						extractDir = filepath.Join(minui.GetRomDirectory(), gameFolder)
+						archivePath = filepath.Join(extractDir, g.Files[0].FileName)
+					} else {
+						extractDir = romDirectory
+						archivePath = filepath.Join(romDirectory, g.Files[0].FileName)
+					}
 
 					progress := &atomic.Float64{}
 					_, err := gaba.ProcessMessage(
@@ -252,12 +268,12 @@ func (s *DownloadScreen) draw(input DownloadInput) (DownloadOutput, error) {
 							if ext == ".7z" {
 								archiveFiles, extractErr = fileutil.SevenZipFileNames(archivePath)
 								if extractErr == nil {
-									extractErr = fileutil.Un7zip(archivePath, romDirectory, progress)
+									extractErr = fileutil.Un7zip(archivePath, extractDir, progress)
 								}
 							} else {
 								archiveFiles, extractErr = fileutil.ZipFileNames(archivePath)
 								if extractErr == nil {
-									extractErr = fileutil.Unzip(archivePath, romDirectory, progress)
+									extractErr = fileutil.Unzip(archivePath, extractDir, progress)
 								}
 							}
 
@@ -280,10 +296,33 @@ func (s *DownloadScreen) draw(input DownloadInput) (DownloadOutput, error) {
 										}
 									}
 								}
-								for i, entry := range gamelistEntries {
-									if entry.Game.ID == g.ID {
-										gamelistEntries[i].GamePath = filepath.Join(romDirectory, gamePath)
-										break
+
+								// Write m3u and rename extracted file if SubfolderPerGame
+								if input.Config.SubfolderPerGame {
+									realExt := filepath.Ext(gamePath)
+									cleanFileName := cleanName + realExt
+									oldPath := filepath.Join(extractDir, gamePath)
+									newPath := filepath.Join(extractDir, cleanFileName)
+									if err := os.Rename(oldPath, newPath); err != nil {
+										logger.Warn("Failed to rename extracted ROM", "from", oldPath, "to", newPath, "error", err)
+										cleanFileName = gamePath // fallback to original name
+									}
+									m3uPath := filepath.Join(extractDir, gameFolder+".m3u")
+									if err := os.WriteFile(m3uPath, []byte(cleanFileName), 0644); err != nil {
+										logger.Warn("Failed to write m3u file", "path", m3uPath, "error", err)
+									}
+									for i, entry := range gamelistEntries {
+										if entry.Game.ID == g.ID {
+											gamelistEntries[i].GamePath = newPath
+											break
+										}
+									}
+								} else {
+									for i, entry := range gamelistEntries {
+										if entry.Game.ID == g.ID {
+											gamelistEntries[i].GamePath = filepath.Join(romDirectory, gamePath)
+											break
+										}
 									}
 								}
 							}
@@ -300,7 +339,47 @@ func (s *DownloadScreen) draw(input DownloadInput) (DownloadOutput, error) {
 			}
 		}
 	}
+	if input.Config.SubfolderPerGame && !input.Config.UnzipDownloads {
+		for _, g := range input.SelectedGames {
+			if g.HasMultipleFiles {
+				continue
+			}
 
+			completed := slices.ContainsFunc(res.Completed, func(d gaba.Download) bool {
+				return d.DisplayName == g.Name
+			})
+			if !completed {
+				continue
+			}
+
+			if len(g.Files) == 0 {
+				continue
+			}
+
+			ext := strings.ToLower(filepath.Ext(g.Files[0].FileName))
+
+			gamePlatform := input.Platform
+			if input.Platform.ID == 0 && g.PlatformID != 0 {
+				gamePlatform = romm.Platform{
+					ID:     g.PlatformID,
+					FSSlug: g.PlatformFSSlug,
+					Name:   g.PlatformDisplayName,
+				}
+			}
+
+			romDirectory := input.Config.GetPlatformRomDirectory(gamePlatform)
+			tag := extractPlatformTag(romDirectory)
+			cleanName := stripParentheses(g.FsNameNoExt)
+			gameFolder := fmt.Sprintf("%s (%s)", cleanName, tag)
+			subdir := filepath.Join(minui.GetRomDirectory(), gameFolder)
+
+			romFileName := cleanName + ext
+			m3uPath := filepath.Join(subdir, gameFolder+".m3u")
+			if err := os.WriteFile(m3uPath, []byte(romFileName), 0644); err != nil {
+				logger.Warn("Failed to write m3u file", "path", m3uPath, "error", err)
+			}
+		}
+	}
 	downloadedGames := make([]romm.Rom, 0, len(res.Completed))
 	for _, g := range input.SelectedGames {
 		if slices.ContainsFunc(res.Completed, func(d gaba.Download) bool {
@@ -359,6 +438,8 @@ func (s *DownloadScreen) buildDownloads(config internal.Config, host romm.Host, 
 
 		romDirectory := config.GetPlatformRomDirectory(gamePlatform)
 		gamelistRomEntry.RomDirectory = romDirectory
+		gaba.GetLogger().Debug("romDirectory", "value", romDirectory)
+		gaba.GetLogger().Debug("FsNameNoExt", "value", g.FsNameNoExt)
 		downloadLocation := ""
 
 		sourceURL := ""
@@ -368,7 +449,6 @@ func (s *DownloadScreen) buildDownloads(config internal.Config, host romm.Host, 
 			downloadLocation = filepath.Join(tmpDir, fmt.Sprintf("grout_multirom_%d.zip", g.ID))
 			sourceURL, _ = url.JoinPath(host.URL(), "/api/roms/", strconv.Itoa(g.ID), "content", g.FsName)
 		} else {
-			// Find the file to download - use selected file if specified, otherwise first file
 			fileToDownload := g.Files[0]
 			if selectedFileID > 0 {
 				for _, f := range g.Files {
@@ -378,7 +458,20 @@ func (s *DownloadScreen) buildDownloads(config internal.Config, host romm.Host, 
 					}
 				}
 			}
-			downloadLocation = filepath.Join(romDirectory, fileToDownload.FileName)
+			if config.SubfolderPerGame {
+				tag := extractPlatformTag(romDirectory)
+				cleanName := stripParentheses(g.FsNameNoExt)
+				gameFolder := fmt.Sprintf("%s (%s)", cleanName, tag)
+				subdir := filepath.Join(minui.GetRomDirectory(), gameFolder)
+				if err := os.MkdirAll(subdir, 0755); err != nil {
+					gaba.GetLogger().Warn("Failed to create game subfolder", "dir", subdir, "error", err)
+				}
+				ext := filepath.Ext(fileToDownload.FileName)
+				cleanFileName := cleanName + ext
+				downloadLocation = filepath.Join(subdir, cleanFileName)
+			} else {
+				downloadLocation = filepath.Join(romDirectory, fileToDownload.FileName)
+			}
 			sourceURL, _ = url.JoinPath(host.URL(), "/api/roms/", strconv.Itoa(g.ID), "content", fileToDownload.FileName)
 			sourceURL += "?" + url.Values{"file_ids": {strconv.Itoa(fileToDownload.ID)}}.Encode()
 		}
@@ -400,6 +493,13 @@ func (s *DownloadScreen) buildDownloads(config internal.Config, host romm.Host, 
 
 			coverURL := g.GetArtworkURL(config.ArtKind, host)
 			gamelistRomEntry.ArtLocation.ImagePath = artLocation
+
+			artDownloads = append(artDownloads, artDownload{
+				URL:      coverURL,
+				Location: artLocation,
+				GameName: g.Name,
+				IsImage:  true,
+			})
 
 			artDownloads = append(artDownloads, artDownload{
 				URL:      coverURL,
@@ -567,7 +667,19 @@ func (s *DownloadScreen) buildDownloads(config internal.Config, host romm.Host, 
 
 	return downloads, artDownloads, gamesSummaries
 }
-
+func stripParentheses(name string) string {
+    re := regexp.MustCompile(`\s*\([^)]*\)`)
+    return strings.TrimSpace(re.ReplaceAllString(name, ""))
+}
+func extractPlatformTag(romDirectory string) string {
+    base := filepath.Base(romDirectory)
+    start := strings.LastIndex(base, "(")
+    end := strings.LastIndex(base, ")")
+    if start >= 0 && end > start {
+        return base[start+1 : end]
+    }
+    return base
+}
 func (s *DownloadScreen) downloadArt(artDownloads []artDownload, downloadedGames []romm.Rom, headers map[string]string, progress *atomic.Float64, insecureSkipVerify bool) {
 	logger := gaba.GetLogger()
 
@@ -685,7 +797,7 @@ func (s *DownloadScreen) downloadArt(artDownloads []artDownload, downloadedGames
 				continue
 			}
 		}
-
+		
 		successCount++
 
 		processedCount++
@@ -693,4 +805,5 @@ func (s *DownloadScreen) downloadArt(artDownloads []artDownload, downloadedGames
 			progress.Store(float64(processedCount) / float64(totalArt))
 		}
 	}
+	
 }
