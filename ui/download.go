@@ -246,6 +246,7 @@ func (s *DownloadScreen) draw(input DownloadInput) (DownloadOutput, error) {
 						cleanName = stripParentheses(g.FsNameNoExt)
 						gameFolder = fmt.Sprintf("%s (%s)", cleanName, tag)
 						extractDir = filepath.Join(minui.GetRomDirectory(), gameFolder)
+						artDir := GetArtDirectory(extractDir)
 						archivePath = filepath.Join(extractDir, g.Files[0].FileName)
 					} else {
 						extractDir = romDirectory
